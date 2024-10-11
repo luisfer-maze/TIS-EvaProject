@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../css/Proyecto.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -19,39 +19,81 @@ const Proyecto = () => {
   const [image, setImage] = useState(null); // Estado para la imagen seleccionada
   const isModalOpen = showModal || showConfirmModal || showCreateSuccessMessage || showEditSuccessMessage || showDeleteSuccessMessage || showErrorMessage;
 
+  // Obtener lista de proyectos al cargar el componente
+  useEffect(() => {
+    fetch('http://localhost:8000/proyectos')
+      .then((response) => response.json())
+      .then((data) => setProjects(data))
+      .catch((error) => console.error('Error fetching projects:', error));
+  }, []);
+
   // Función para guardar o editar un proyecto
   const handleSaveProject = () => {
     if (!projectName || !projectDescription) {
-      // Si falta el nombre o la descripción, mostrar el mensaje de error
       setErrorMessage('Por favor, complete todos los campos obligatorios.');
       setShowErrorMessage(true);
       return;
     }
 
-    if (isEditing) {
-      const updatedProjects = projects.map((project, index) =>
-        index === projectToEdit ? { name: projectName, description: projectDescription, image: image } : project
-      );
-      setProjects(updatedProjects);
-      setIsEditing(false);
-      setProjectToEdit(null);
-      setShowEditSuccessMessage(true);
-    } else {
-      const newProject = { name: projectName, description: projectDescription, image: image };
-      setProjects([...projects, newProject]);
-      setShowCreateSuccessMessage(true);
+    const formData = new FormData();
+    formData.append('NOMBRE_PROYECTO', projectName);
+    formData.append('DESCRIP_PROYECTO', projectDescription);
+    formData.append('FECHA_INICIO_PROYECTO', '2024-01-01');
+    formData.append('FECHA_FIN_PROYECTO', '2024-12-31');
+    if (image) {
+      formData.append('PORTADA_PROYECTO', image);  // Subir imagen si existe
     }
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    if (isEditing) {
+      // Usamos POST con el campo oculto `_method` para simular un PUT
+      formData.append('_method', 'PUT'); // Este campo hace que Laravel lo trate como un PUT
+      
+      fetch(`http://localhost:8000/proyectos/${projectToEdit}`, {
+        method: 'POST',  // Aquí se utiliza POST, pero Laravel lo interpretará como PUT
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+        },
+        body: formData,  // Utilizamos FormData para enviar datos incluyendo archivos
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          const updatedProjects = projects.map((project) =>
+            project.ID_PROYECTO === projectToEdit ? data : project
+          );
+          setProjects(updatedProjects);
+          setShowEditSuccessMessage(true);
+        })
+        .catch((error) => console.error('Error editing project:', error));
+    } else {
+      fetch('http://localhost:8000/proyectos', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        body: formData,  // Utilizamos FormData para enviar datos incluyendo archivos
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          setProjects([...projects, data]);
+          setShowCreateSuccessMessage(true);
+        })
+        .catch((error) => console.error('Error creating project:', error));
+    }
+
     setShowModal(false);
     setProjectName('');
     setProjectDescription('');
-    setImage(null); // Limpiar el estado de la imagen después de guardar
+    setImage(null);
   };
+
 
   const handleOpenEditModal = (index) => {
     const project = projects[index];
-    setProjectName(project.name);
-    setProjectDescription(project.description);
-    setProjectToEdit(index); // Guardar el índice del proyecto a editar
+    setProjectName(project.NOMBRE_PROYECTO);
+    setProjectDescription(project.DESCRIP_PROYECTO);
+    setProjectToEdit(project.ID_PROYECTO); // Guardar el ID del proyecto a editar
     setIsEditing(true);
     setShowModal(true);
   };
@@ -62,11 +104,21 @@ const Proyecto = () => {
   };
 
   const handleDeleteProject = () => {
-    const updatedProjects = projects.filter((_, index) => index !== projectToDelete);
-    setProjects(updatedProjects);
-    setShowConfirmModal(false);
-    setProjectToDelete(null);
-    setShowDeleteSuccessMessage(true);
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    fetch(`http://localhost:8000/proyectos/${projects[projectToDelete].ID_PROYECTO}`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-TOKEN': csrfToken,
+      },
+    })
+      .then(() => {
+        const updatedProjects = projects.filter((_, index) => index !== projectToDelete);
+        setProjects(updatedProjects);
+        setShowConfirmModal(false);
+        setProjectToDelete(null);
+        setShowDeleteSuccessMessage(true);
+      })
+      .catch((error) => console.error('Error deleting project:', error));
   };
 
   const handleImageChange = (e) => {
@@ -111,10 +163,14 @@ const Proyecto = () => {
         <div className="project-list">
           {projects.map((project, index) => (
             <div key={index} className="project-item">
-              <img src="https://via.placeholder.com/50" alt="Icono del proyecto" />
+              {project.PORTADA_PROYECTO ? (
+                <img src={`http://localhost:8000/storage/${project.PORTADA_PROYECTO}`} alt="Icono del proyecto" width="50" height="50" />
+              ) : (
+                <img src="https://via.placeholder.com/50" alt="Icono del proyecto" />
+              )}
               <div className="project-info">
-                <h3>{project.name}</h3>
-                <p>{project.description}</p>
+                <h3>{project.NOMBRE_PROYECTO}</h3>
+                <p>{project.DESCRIP_PROYECTO}</p>
               </div>
               <div className="project-actions">
                 <button className="action-btn" onClick={() => handleOpenEditModal(index)}>
