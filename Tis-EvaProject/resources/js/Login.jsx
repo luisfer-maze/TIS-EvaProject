@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import '../css/Login.css';  // Ruta del CSS
+import '../css/Login.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 function App() {
   const [role, setRole] = useState('Docente');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleLogin = (event) => {
     event.preventDefault();
@@ -15,24 +21,24 @@ function App() {
     <div
       className="app-background"
       style={{
-        backgroundImage: `url('/assets/Background.jpg')`,  // Ruta desde public/assets
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+        backgroundImage: `url('/assets/Background.jpg')`,
       }}
     >
       <div className="login-container">
         <h2>Inicio Sesión</h2>
         <form onSubmit={handleLogin}>
-          <div className="input-group">
+          {/* Select de rol con ícono de flecha */}
+          <div className="input-group" style={{ position: 'relative' }}>
             <select value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="Docente">Docente</option>
               <option value="Estudiante">Estudiante</option>
             </select>
+            <span className="toggle-select">
+              <i className="fas fa-chevron-down"></i> {/* Icono de flecha */}
+            </span>
           </div>
+
+          {/* Input de correo */}
           <div className="input-group">
             <input
               type="email"
@@ -42,14 +48,19 @@ function App() {
               required
             />
           </div>
-          <div className="input-group">
+
+          {/* Input de contraseña con ícono de ojo */}
+          <div className="input-group" style={{ position: 'relative' }}>
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               placeholder="Contraseña:"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <span className="toggle-password" onClick={togglePasswordVisibility}>
+              {showPassword ? <i className="fas fa-eye-slash"></i> : <i className="fas fa-eye"></i>}
+            </span>
           </div>
           <button type="submit">Iniciar Sesión</button>
         </form>
@@ -58,7 +69,7 @@ function App() {
           <a href="#">¿No tienes cuenta? Regístrate</a>
         </div>
         <div className="google-login">
-          <img src="/assets/LogoGoogle.png" alt="Google logo" />  {/* Ruta desde public/assets */}
+          <img src="/assets/LogoGoogle.png" alt="Google logo" />
           <span>Continuar con Google</span>
         </div>
       </div>
