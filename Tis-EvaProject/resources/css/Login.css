@@ -16,15 +16,15 @@ html, body {
 }
 
 .login-container {
-  background: rgba(255, 255, 255, 0.15); /* Fondo translúcido */
+  background: rgba(255, 255, 255, 0.1); /* Ajusta este valor para mayor transparencia */
   border-radius: 20px;
   padding: 40px;
   box-sizing: border-box;
   width: 100%;  
-  max-width: 400px;  /* Control del tamaño máximo */
+  max-width: 400px;
   text-align: center;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); 
-  backdrop-filter: blur(10px); /* Efecto de desenfoque */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(0.5px); /* Mantiene el desenfoque */
 }
 
 .login-container h2 {
@@ -36,6 +36,7 @@ html, body {
 .input-group {
   position: relative;
   width: 100%; /* Queremos que ocupe todo el contenedor */
+  cursor: pointer;
 }
 
 .input-group select, .input-group input {
@@ -75,8 +76,13 @@ html, body {
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none; /* Hace que el ícono sea clickeable a través del select */
+  cursor: pointer;
   font-size: 18px;
   color: #FFFFFF;
+}
+
+.input-group:hover .toggle-select, .toggle-password:hover {
+  color: #CCCCCC; /* Color más claro cuando el usuario pasa el mouse por encima */
 }
 
 /* Ocultar la flecha nativa del select */
@@ -125,20 +131,20 @@ button:hover {
   justify-content: center;
   align-items: center;
   background-color: #FFFFFF;
-  padding: 10px;
   border-radius: 30px;
-  margin-top: 20px;
+  margin: 20px auto; /* Centrar horizontalmente el botón */
   cursor: pointer;
+  width: 230px;
+  height: 42px;
 }
 
 .google-login img {
-  width: 24px;
-  height: 24px;
+  width: 40px;
+  height: 40px;
 }
 
 .google-login span {
-  font-size: 14px;
-  margin-left: 8px;
+  font-size: 16px;
   color: #000000;
 }
 

@@ -202,7 +202,7 @@ html, body {
 }
 
 .project-item .project-info h3:hover {
-  color: #002A4C;
+  color: #015FA9;
 }
 
 .project-item .project-info p {
@@ -397,7 +397,7 @@ h3 {
   width: 400px;
   max-width: 100%;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  text-align: left;
+  text-align: center;
 }
 
 .confirm-modal-content p {
@@ -405,7 +405,7 @@ h3 {
   color: #333;
   font-size: 16px;
   font-weight: normal;
-  text-align: left;
+  text-align: center;
 }
 
 /* Modal de éxito */
