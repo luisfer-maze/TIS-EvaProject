@@ -1,21 +1,27 @@
-<IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
-    </IfModule>
-
-    RewriteEngine On
-
-    # Handle Authorization Header
-    RewriteCond %{HTTP:Authorization} .
-    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-
-    # Redirect Trailing Slashes If Not A Folder...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
-
-    # Send Requests To Front Controller...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^ index.php [L]
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, X-CSRF-TOKEN"
 </IfModule>
+
+Options +FollowSymLinks
+RewriteEngine On
+
+# Permitir el acceso a los archivos de imagen y otros archivos dentro de public/storage
+<FilesMatch "\.(jpg|jpeg|png|gif|bmp|webp)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# También puedes incluir otras extensiones si es necesario
+<FilesMatch "\.(pdf|doc|docx|xls|xlsx)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+<Limit GET POST PUT DELETE>
+    Allow from all
+</Limit>
+
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]

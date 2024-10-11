@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../css/Proyecto.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -8,6 +8,8 @@ const Proyecto = () => {
   const [showCreateSuccessMessage, setShowCreateSuccessMessage] = useState(false);
   const [showEditSuccessMessage, setShowEditSuccessMessage] = useState(false);
   const [showDeleteSuccessMessage, setShowDeleteSuccessMessage] = useState(false);
+  const [showErrorMessage, setShowErrorMessage] = useState(false); // Estado para el mensaje de error
+  const [errorMessage, setErrorMessage] = useState(''); // Estado para el texto del mensaje de error
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const [projects, setProjects] = useState([]);
@@ -15,35 +17,83 @@ const Proyecto = () => {
   const [projectToEdit, setProjectToEdit] = useState(null); // Estado para el proyecto a editar
   const [isEditing, setIsEditing] = useState(false);
   const [image, setImage] = useState(null); // Estado para la imagen seleccionada
-  const isModalOpen = showModal || showConfirmModal || showCreateSuccessMessage || showEditSuccessMessage || showDeleteSuccessMessage; // Añadido los mensajes de éxito
+  const isModalOpen = showModal || showConfirmModal || showCreateSuccessMessage || showEditSuccessMessage || showDeleteSuccessMessage || showErrorMessage;
+
+  // Obtener lista de proyectos al cargar el componente
+  useEffect(() => {
+    fetch('http://localhost:8000/proyectos')
+      .then((response) => response.json())
+      .then((data) => setProjects(data))
+      .catch((error) => console.error('Error fetching projects:', error));
+  }, []);
 
   // Función para guardar o editar un proyecto
   const handleSaveProject = () => {
-    if (isEditing) {
-      const updatedProjects = projects.map((project, index) =>
-        index === projectToEdit ? { name: projectName, description: projectDescription, image: image } : project
-      );
-      setProjects(updatedProjects);
-      setIsEditing(false);
-      setProjectToEdit(null);
-      setShowEditSuccessMessage(true);
-    } else {
-      const newProject = { name: projectName, description: projectDescription, image: image };
-      setProjects([...projects, newProject]);
-      setShowCreateSuccessMessage(true);
+    if (!projectName || !projectDescription) {
+      setErrorMessage('Por favor, complete todos los campos obligatorios.');
+      setShowErrorMessage(true);
+      return;
     }
+
+    const formData = new FormData();
+    formData.append('NOMBRE_PROYECTO', projectName);
+    formData.append('DESCRIP_PROYECTO', projectDescription);
+    formData.append('FECHA_INICIO_PROYECTO', '2024-01-01');
+    formData.append('FECHA_FIN_PROYECTO', '2024-12-31');
+    if (image) {
+      formData.append('PORTADA_PROYECTO', image);  // Subir imagen si existe
+    }
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    if (isEditing) {
+      // Usamos POST con el campo oculto `_method` para simular un PUT
+      formData.append('_method', 'PUT'); // Este campo hace que Laravel lo trate como un PUT
+      
+      fetch(`http://localhost:8000/proyectos/${projectToEdit}`, {
+        method: 'POST',  // Aquí se utiliza POST, pero Laravel lo interpretará como PUT
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+        },
+        body: formData,  // Utilizamos FormData para enviar datos incluyendo archivos
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          const updatedProjects = projects.map((project) =>
+            project.ID_PROYECTO === projectToEdit ? data : project
+          );
+          setProjects(updatedProjects);
+          setShowEditSuccessMessage(true);
+        })
+        .catch((error) => console.error('Error editing project:', error));
+    } else {
+      fetch('http://localhost:8000/proyectos', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        body: formData,  // Utilizamos FormData para enviar datos incluyendo archivos
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          setProjects([...projects, data]);
+          setShowCreateSuccessMessage(true);
+        })
+        .catch((error) => console.error('Error creating project:', error));
+    }
+
     setShowModal(false);
     setProjectName('');
     setProjectDescription('');
-    setImage(null); // Limpiar el estado de la imagen después de guardar
+    setImage(null);
   };
 
-  // Función para abrir el modal de edición de un proyecto
+
   const handleOpenEditModal = (index) => {
     const project = projects[index];
-    setProjectName(project.name);
-    setProjectDescription(project.description);
-    setProjectToEdit(index); // Guardar el índice del proyecto a editar
+    setProjectName(project.NOMBRE_PROYECTO);
+    setProjectDescription(project.DESCRIP_PROYECTO);
+    setProjectToEdit(project.ID_PROYECTO); // Guardar el ID del proyecto a editar
     setIsEditing(true);
     setShowModal(true);
   };
@@ -54,11 +104,21 @@ const Proyecto = () => {
   };
 
   const handleDeleteProject = () => {
-    const updatedProjects = projects.filter((_, index) => index !== projectToDelete);
-    setProjects(updatedProjects);
-    setShowConfirmModal(false);
-    setProjectToDelete(null);
-    setShowDeleteSuccessMessage(true); // Muestra el mensaje de éxito de eliminación
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    fetch(`http://localhost:8000/proyectos/${projects[projectToDelete].ID_PROYECTO}`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-TOKEN': csrfToken,
+      },
+    })
+      .then(() => {
+        const updatedProjects = projects.filter((_, index) => index !== projectToDelete);
+        setProjects(updatedProjects);
+        setShowConfirmModal(false);
+        setProjectToDelete(null);
+        setShowDeleteSuccessMessage(true);
+      })
+      .catch((error) => console.error('Error deleting project:', error));
   };
 
   const handleImageChange = (e) => {
@@ -66,7 +126,7 @@ const Proyecto = () => {
     const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
 
     if (file && validTypes.includes(file.type)) {
-      setImage(file); // Guardar el archivo seleccionado en el estado
+      setImage(file);
     } else {
       alert('Solo se permiten archivos de imagen en formato JPG, JPEG o PNG.');
     }
@@ -103,10 +163,14 @@ const Proyecto = () => {
         <div className="project-list">
           {projects.map((project, index) => (
             <div key={index} className="project-item">
-              <img src="https://via.placeholder.com/50" alt="Icono del proyecto" />
+              {project.PORTADA_PROYECTO ? (
+                <img src={`http://localhost:8000/storage/${project.PORTADA_PROYECTO}`} alt="Icono del proyecto" width="50" height="50" />
+              ) : (
+                <img src="https://via.placeholder.com/50" alt="Icono del proyecto" />
+              )}
               <div className="project-info">
-                <h3>{project.name}</h3>
-                <p>{project.description}</p>
+                <h3>{project.NOMBRE_PROYECTO}</h3>
+                <p>{project.DESCRIP_PROYECTO}</p>
               </div>
               <div className="project-actions">
                 <button className="action-btn" onClick={() => handleOpenEditModal(index)}>
@@ -121,6 +185,7 @@ const Proyecto = () => {
         </div>
       </div>
 
+      {/* Modal para crear/editar proyectos */}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
@@ -129,14 +194,14 @@ const Proyecto = () => {
               type="text"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              placeholder="Nombre del Proyecto"
+              placeholder="Nombre del Proyecto*"
               className="input-field"
             />
             <div className="description-and-photo">
               <textarea
                 value={projectDescription}
                 onChange={(e) => setProjectDescription(e.target.value)}
-                placeholder="Descripción del proyecto"
+                placeholder="Descripción del proyecto*"
                 className="textarea-field"
               />
               <div className="upload-container">
@@ -148,11 +213,10 @@ const Proyecto = () => {
                 <input
                   id="fileInput"
                   type="file"
-                  accept="image/jpeg, image/png, image/jpg" // Solo permite estos tipos de archivos
+                  accept="image/jpeg, image/png, image/jpg"
                   style={{ display: 'none' }}
-                  onChange={handleImageChange} // Maneja el cambio del archivo
+                  onChange={handleImageChange}
                 />
-                {/* Mostrar la previsualización de la imagen si hay una seleccionada */}
                 {image && <p>{image.name}</p>}
               </div>
             </div>
@@ -168,6 +232,7 @@ const Proyecto = () => {
         </div>
       )}
 
+      {/* Modal de confirmación de eliminación */}
       {showConfirmModal && (
         <div className="confirm-modal">
           <div className="confirm-modal-content">
@@ -185,6 +250,7 @@ const Proyecto = () => {
         </div>
       )}
 
+      {/* Mensaje de éxito para creación */}
       {showCreateSuccessMessage && (
         <div className="success-modal">
           <div className="success-modal-content">
@@ -200,6 +266,7 @@ const Proyecto = () => {
         </div>
       )}
 
+      {/* Mensaje de éxito para edición */}
       {showEditSuccessMessage && (
         <div className="success-modal">
           <div className="success-modal-content">
@@ -215,6 +282,7 @@ const Proyecto = () => {
         </div>
       )}
 
+      {/* Mensaje de éxito para eliminación */}
       {showDeleteSuccessMessage && (
         <div className="success-modal">
           <div className="success-modal-content">
@@ -224,6 +292,22 @@ const Proyecto = () => {
               <p>¡Se eliminó el proyecto correctamente!</p>
             </div>
             <button onClick={() => setShowDeleteSuccessMessage(false)} className="create-btn">
+              Aceptar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de error */}
+      {showErrorMessage && (
+        <div className="error-modal">
+          <div className="error-modal-content">
+            <h3>Error</h3>
+            <div className="error-message">
+              <i className="fas fa-exclamation-circle"></i>
+              <p>Por favor, complete todos los campos.</p>
+            </div>
+            <button onClick={() => setShowErrorMessage(false)} className="create-btn">
               Aceptar
             </button>
           </div>

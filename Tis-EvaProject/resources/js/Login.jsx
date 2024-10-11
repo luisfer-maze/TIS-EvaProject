@@ -66,7 +66,7 @@ function App() {
         </form>
         <div className="extra-links">
           <a href="#">¿Has olvidado la contraseña?</a>
-          <a href="#">¿No tienes cuenta? Regístrate</a>
+          <a href="#">¿No tienes cuenta?</a>
         </div>
         <div className="google-login">
           <img src="/assets/LogoGoogle.png" alt="Google logo" />
