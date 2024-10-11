@@ -1,5 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Proyecto from './Proyecto'; // Asegúrate de que la ruta sea correcta
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Login from './Login';  // Asegúrate de que la ruta sea correcta
+import Proyecto from './Proyecto';  // Asegúrate de que la ruta sea correcta
 
-ReactDOM.render(<Proyecto />, document.getElementById('app'));
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/proyecto" element={<Proyecto />} />
+      </Routes>
+    </Router>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById('app'));
