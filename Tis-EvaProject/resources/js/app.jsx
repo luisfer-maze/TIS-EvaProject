@@ -1,23 +1,26 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';  // Importa createRoot
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Login from './Login';  // Asegúrate de que la ruta sea correcta
-import Proyecto from './Proyecto';  // Asegúrate de que la ruta sea correcta
-import HomePage from './HomePage';  // Importa tu página de inicio
+import Login from './Login';
+import Proyecto from './Proyecto';
+import HomePage from './HomePage';
+import Register from './Register';  // Importamos Register
+import ForgotPassword from './ForgotPassword';  // Importamos ForgotPassword
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<HomePage />} />  {/* Ruta para la página principal */}
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/proyecto" element={<Proyecto />} />
-        <Route path="/homepage" element={<HomePage />} /> {/* Extra route for /homepage if needed */}
+        <Route path="/register" element={<Register />} />  {/* Nueva ruta para Register */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />  {/* Nueva ruta para Forgot Password */}
       </Routes>
     </Router>
   );
 }
 
 const rootElement = document.getElementById('app');
-const root = createRoot(rootElement);  // Usando createRoot para renderizar
-root.render(<App />);  // Renderiza el componente
+const root = createRoot(rootElement);
+root.render(<App />);

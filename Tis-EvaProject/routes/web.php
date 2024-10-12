@@ -19,6 +19,14 @@ Route::get('/homepage', function () {
     return view('welcome');  // Renderiza el componente HomePage en React
 });
 
+Route::get('/register', function () {
+    return view('welcome');  // Renderiza el componente HomePage en React
+});
+
+Route::get('/forgot-password', function () {
+    return view('welcome');  // Renderiza el componente HomePage en React
+});
+
 Route::get('/proyectos', [ProyectoController::class, 'index']);
 Route::post('/proyectos', [ProyectoController::class, 'store']);
 Route::get('/proyectos/{id}', [ProyectoController::class, 'show']);
