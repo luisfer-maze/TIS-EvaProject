@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom'; // Importa Link y useNavigate
 import '../css/Login.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -7,6 +8,7 @@ function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate(); // Hook para navegar programáticamente
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -15,25 +17,38 @@ function App() {
   const handleLogin = (event) => {
     event.preventDefault();
     console.log('Login:', { role, email, password });
+
+    // Redirige a otra página si el login es exitoso (por ejemplo, al dashboard)
+    // navigate('/dashboard'); // Ejemplo de redirección
   };
 
   return (
     <div
       className="app-background"
       style={{
-        backgroundImage: `url('/assets/Background.jpg')`,
+        backgroundImage: `url('/assets/FondoHome.png')`,
       }}
     >
       <div className="login-container">
         <h2>Inicio Sesión</h2>
+
+        {/* Línea divisoria */}
+        <div className="divider"></div>
         <form onSubmit={handleLogin}>
           {/* Select de rol con ícono de flecha */}
           <div className="input-group" style={{ position: 'relative' }}>
-            <select value={role} onChange={(e) => setRole(e.target.value)}>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="select-role"
+            >
               <option value="Docente">Docente</option>
               <option value="Estudiante">Estudiante</option>
             </select>
-            <span className="toggle-select">
+            <span
+              className="toggle-select"
+              onClick={() => document.querySelector('.select-role').click()}
+            >
               <i className="fas fa-chevron-down"></i> {/* Icono de flecha */}
             </span>
           </div>
@@ -64,10 +79,15 @@ function App() {
           </div>
           <button type="submit">Iniciar Sesión</button>
         </form>
+
+        {/* Enlaces a otras páginas */}
         <div className="extra-links">
-          <a href="#">¿Has olvidado la contraseña?</a>
-          <a href="#">¿No tienes cuenta?</a>
+          <Link to="/forgot-password">¿Has olvidado la contraseña?</Link>
+          <Link to="/register">¿No tienes cuenta?</Link>
         </div>
+
+        {/* Línea divisoria */}
+        <div className="divider"></div>
         <div className="google-login">
           <img src="/assets/LogoGoogle.png" alt="Google logo" />
           <span>Continuar con Google</span>
