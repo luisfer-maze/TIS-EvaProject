@@ -14,6 +14,11 @@ Route::get('/login', function () {
 Route::get('/proyecto', function () {
     return view('welcome');  // Renderiza el componente Proyecto en React
 });
+
+Route::get('/homepage', function () {
+    return view('welcome');  // Renderiza el componente HomePage en React
+});
+
 Route::get('/proyectos', [ProyectoController::class, 'index']);
 Route::post('/proyectos', [ProyectoController::class, 'store']);
 Route::get('/proyectos/{id}', [ProyectoController::class, 'show']);
