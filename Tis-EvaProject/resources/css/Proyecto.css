@@ -334,6 +334,13 @@ h3 {
   color: #666;
 }
 
+.image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%; /* Mantiene la forma circular */
+}
+
 /* Botones de acción del modal */
 .modal-actions, .confirm-modal-actions {
   display: flex;

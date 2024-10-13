@@ -49,11 +49,11 @@ const Proyecto = () => {
     if (isEditing) {
       // Usamos POST con el campo oculto `_method` para simular un PUT
       formData.append('_method', 'PUT'); // Este campo hace que Laravel lo trate como un PUT
-      
+
       fetch(`http://localhost:8000/proyectos/${projectToEdit}`, {
         method: 'POST',  // Aquí se utiliza POST, pero Laravel lo interpretará como PUT
         headers: {
-            'X-CSRF-TOKEN': csrfToken,
+          'X-CSRF-TOKEN': csrfToken,
         },
         body: formData,  // Utilizamos FormData para enviar datos incluyendo archivos
       })
@@ -93,7 +93,8 @@ const Proyecto = () => {
     const project = projects[index];
     setProjectName(project.NOMBRE_PROYECTO);
     setProjectDescription(project.DESCRIP_PROYECTO);
-    setProjectToEdit(project.ID_PROYECTO); // Guardar el ID del proyecto a editar
+    setProjectToEdit(project); // Guardar todo el proyecto, no solo el ID
+    setImage(null); // Asegúrate de que el estado de la nueva imagen sea null inicialmente
     setIsEditing(true);
     setShowModal(true);
   };
@@ -130,6 +131,18 @@ const Proyecto = () => {
     } else {
       alert('Solo se permiten archivos de imagen en formato JPG, JPEG o PNG.');
     }
+  };
+
+  const getImagePreview = () => {
+    if (image) {
+      // Si hay una nueva imagen seleccionada, mostrar esa
+      return URL.createObjectURL(image);
+    }
+    if (isEditing && projectToEdit && projectToEdit.PORTADA_PROYECTO) {
+      // Si se está editando y el proyecto tiene una imagen guardada, mostrar esa
+      return `http://localhost:8000/storage/${projectToEdit.PORTADA_PROYECTO}`;
+    }
+    return null;
   };
 
   return (
@@ -207,8 +220,14 @@ const Proyecto = () => {
               <div className="upload-container">
                 <p className="upload-title">Incluya una foto</p>
                 <div className="upload-box" onClick={() => document.getElementById('fileInput').click()}>
-                  <i className="fas fa-cloud-upload-alt"></i>
-                  <p>pulse aquí para añadir archivos</p>
+                  {getImagePreview() ? (
+                    <img src={getImagePreview()} alt="Vista previa" className="image-preview" />
+                  ) : (
+                    <>
+                      <i className="fas fa-cloud-upload-alt"></i>
+                      <p>Pulsa aquí para añadir archivos</p>
+                    </>
+                  )}
                 </div>
                 <input
                   id="fileInput"
