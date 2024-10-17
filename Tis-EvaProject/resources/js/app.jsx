@@ -6,6 +6,9 @@ import Proyecto from './Proyecto';
 import HomePage from './HomePage';
 import Register from './Register';  // Importamos Register
 import ForgotPassword from './ForgotPassword';  // Importamos ForgotPassword
+import ProyectoEstudiante from  './ProyectoEstudiante';   // Importamos ProyectoEstudiante
+import PlanificacionEstudiante from  './PlanificacionEstudiante';  // Importamos PlanificacionEstudiante
+import HistoriaUsuario from   './HistoriaUsuario';  // Importamos HistoriaUsuario
 
 function App() {
   return (
@@ -16,6 +19,9 @@ function App() {
         <Route path="/proyecto" element={<Proyecto />} />
         <Route path="/register" element={<Register />} />  {/* Nueva ruta para Register */}
         <Route path="/forgot-password" element={<ForgotPassword />} />  {/* Nueva ruta para Forgot Password */}
+        <Route path="/proyecto-estudiante" element={<ProyectoEstudiante />} />   {/* Nueva ruta para ProyectoEstudiante */}
+        <Route path="/planificacion-estudiante" element={<PlanificacionEstudiante />} />   {/* Nueva ruta para PlanificacionEstudiante */}
+        <Route path="/historia-usuario/:id" element={<HistoriaUsuario />} />
       </Routes>
     </Router>
   );

@@ -40,52 +40,40 @@ const Proyecto = () => {
     formData.append('DESCRIP_PROYECTO', projectDescription);
     formData.append('FECHA_INICIO_PROYECTO', '2024-01-01');
     formData.append('FECHA_FIN_PROYECTO', '2024-12-31');
+
     if (image) {
-      formData.append('PORTADA_PROYECTO', image);  // Subir imagen si existe
+      formData.append('PORTADA_PROYECTO', image);
+    }
+
+    // Añade el campo para que Laravel lo trate como PUT
+    if (isEditing) {
+      formData.append('_method', 'PUT');
     }
 
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    if (isEditing) {
-      // Usamos POST con el campo oculto `_method` para simular un PUT
-      formData.append('_method', 'PUT'); // Este campo hace que Laravel lo trate como un PUT
-      
-      fetch(`http://localhost:8000/proyectos/${projectToEdit}`, {
-        method: 'POST',  // Aquí se utiliza POST, pero Laravel lo interpretará como PUT
-        headers: {
-            'X-CSRF-TOKEN': csrfToken,
-        },
-        body: formData,  // Utilizamos FormData para enviar datos incluyendo archivos
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          const updatedProjects = projects.map((project) =>
-            project.ID_PROYECTO === projectToEdit ? data : project
-          );
-          setProjects(updatedProjects);
-          setShowEditSuccessMessage(true);
-        })
-        .catch((error) => console.error('Error editing project:', error));
-    } else {
-      fetch('http://localhost:8000/proyectos', {
-        method: 'POST',
-        headers: {
-          'X-CSRF-TOKEN': csrfToken,
-        },
-        body: formData,  // Utilizamos FormData para enviar datos incluyendo archivos
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          setProjects([...projects, data]);
-          setShowCreateSuccessMessage(true);
-        })
-        .catch((error) => console.error('Error creating project:', error));
-    }
+    const url = isEditing
+      ? `http://localhost:8000/proyectos/${projectToEdit.ID_PROYECTO}`
+      : 'http://localhost:8000/proyectos';
 
-    setShowModal(false);
-    setProjectName('');
-    setProjectDescription('');
-    setImage(null);
+    fetch(url, {
+      method: 'POST', // Laravel interpretará como PUT si _method está en el FormData
+      headers: { 'X-CSRF-TOKEN': csrfToken },
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const updatedProjects = isEditing
+          ? projects.map((project) =>
+            project.ID_PROYECTO === projectToEdit.ID_PROYECTO ? data : project
+          )
+          : [...projects, data];
+        setProjects(updatedProjects);
+        setShowModal(false);
+        setShowCreateSuccessMessage(!isEditing);
+        setShowEditSuccessMessage(isEditing);
+      })
+      .catch((error) => console.error('Error al guardar el proyecto:', error));
   };
 
 
@@ -93,7 +81,8 @@ const Proyecto = () => {
     const project = projects[index];
     setProjectName(project.NOMBRE_PROYECTO);
     setProjectDescription(project.DESCRIP_PROYECTO);
-    setProjectToEdit(project.ID_PROYECTO); // Guardar el ID del proyecto a editar
+    setProjectToEdit(project); // Guarda todo el proyecto, no solo el ID
+    setImage(null); // Asegúrate de limpiar la imagen seleccionada previamente
     setIsEditing(true);
     setShowModal(true);
   };
@@ -130,6 +119,16 @@ const Proyecto = () => {
     } else {
       alert('Solo se permiten archivos de imagen en formato JPG, JPEG o PNG.');
     }
+  };
+
+  const getImagePreview = () => {
+    if (image) {
+      return URL.createObjectURL(image); // Muestra la imagen seleccionada en el modal
+    }
+    if (isEditing && projectToEdit && projectToEdit.PORTADA_PROYECTO) {
+      return `http://localhost:8000/storage/${projectToEdit.PORTADA_PROYECTO}`; // Muestra la imagen existente
+    }
+    return null;
   };
 
   return (
@@ -207,8 +206,14 @@ const Proyecto = () => {
               <div className="upload-container">
                 <p className="upload-title">Incluya una foto</p>
                 <div className="upload-box" onClick={() => document.getElementById('fileInput').click()}>
-                  <i className="fas fa-cloud-upload-alt"></i>
-                  <p>pulse aquí para añadir archivos</p>
+                  {getImagePreview() ? (
+                    <img src={getImagePreview()} alt="Vista previa" className="image-preview" />
+                  ) : (
+                    <>
+                      <i className="fas fa-cloud-upload-alt"></i>
+                      <p>Pulsa aquí para añadir archivos</p>
+                    </>
+                  )}
                 </div>
                 <input
                   id="fileInput"

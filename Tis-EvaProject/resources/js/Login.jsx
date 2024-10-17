@@ -26,11 +26,11 @@ function App() {
     <div
       className="app-background"
       style={{
-        backgroundImage: `url('/assets/FondoHome.png')`,
+        backgroundImage: `url('/assets/Background.png')`,
       }}
     >
       <div className="login-container">
-        <h2>Inicio Sesión</h2>
+        <h2>Iniciar Sesión</h2>
 
         {/* Línea divisoria */}
         <div className="divider"></div>

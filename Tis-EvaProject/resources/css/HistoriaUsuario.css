@@ -1,0 +1,74 @@
+.historia-usuario-container {
+    width: 400px;
+    margin: 50px auto;
+    background-color: #f4f4f4;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.h2h {
+    text-align: center;
+    margin: 0;
+    margin-bottom: 10px;
+    font-size: 24px;
+    color: #333;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-field input,
+.form-field textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+textarea {
+    resize: none;
+    height: 80px;
+}
+
+.botones {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.boton-cancelar {
+    background-color: #757575;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.boton-cancelar:hover {
+    background-color: #616161;
+}
+
+.boton-guardar {
+    background-color: #1e88e5;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.boton-guardar:hover {
+    background-color: #1565c0;
+}
