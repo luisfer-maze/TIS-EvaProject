@@ -15,6 +15,18 @@ Route::get('/proyecto', function () {
     return view('welcome');  // Renderiza el componente Proyecto en React
 });
 
+Route::get('/proyecto-estudiante', function () {
+    return view('welcome');  // Renderiza el componente Proyecto en React
+});
+
+Route::get('/planificacion-estudiante', function () {
+    return view('welcome');  // Renderiza el componente Proyecto en React
+});
+
+Route::get('/historia-usuario', function () {
+    return view('welcome');  // Renderiza el componente Proyecto en React
+});
+
 Route::get('/homepage', function () {
     return view('welcome');  // Renderiza el componente HomePage en React
 });

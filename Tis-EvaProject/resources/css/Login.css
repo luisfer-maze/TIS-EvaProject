@@ -120,17 +120,16 @@
     padding-right: 40px; /* Para dejar espacio para el icono */
   }
 
-  button {
+  button:not(.sidebar-collapse,.boton-eliminar, .hu-modal-button, .boton-adjuntar, .btn-primary, .forgot-password-box button, .boton-agregar, .boton-panel, .boton-anadir-sprint, .modale-button, .create-account-button, .create-btn, .cancel-btn, .delete-btn, .new-project-btn) {
     background-color: #0072CE;
     color: #FFFFFF;
     padding: 12px;
-    width: 100%;  /* El botón también usa el 100% del contenedor */
+    width: 100%;
     border: none;
     border-radius: 30px !important;
     font-size: 16px;
     cursor: pointer;
-  }
-
+}
   button:hover {
     background-color: #005bb5;
   }
