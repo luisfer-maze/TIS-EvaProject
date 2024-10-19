@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProyectoController;
+use App\Http\Controllers\AuthController;
 
 Route::get('/', function () {
     return view('welcome');  // Esto cargará el componente de React según la ruta
@@ -11,7 +12,7 @@ Route::get('/login', function () {
     return view('welcome');  // Renderiza el componente Login en React
 });
 
-Route::get('/proyecto', function () {
+Route::get('/proyectos', function () {
     return view('welcome');  // Renderiza el componente Proyecto en React
 });
 
@@ -50,3 +51,6 @@ Route::get('/test', function () {
 });
 
 Route::get('/test-controller', [ProyectoController::class, 'index']);
+
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout']);

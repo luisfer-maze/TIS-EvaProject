@@ -398,14 +398,14 @@ h3 {
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center; /* Alinea verticalmente el modal */
 }
 
 .confirm-modal-content {
   background-color: #fff;
   padding: 20px;
   border-radius: 10px;
-  width: 400px;
+  width: 450px;
   max-width: 100%;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
