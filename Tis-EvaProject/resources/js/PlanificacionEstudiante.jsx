@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom"; // Importación de useNavigate
 import "../css/PlanificacionEstudiante.css";
 import "../css/Sidebar.css";
-import "../css/Proyecto.css";
+import "../css/Proyectos.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 const PlanificacionEstudiante = () => {
@@ -222,7 +222,7 @@ const PlanificacionEstudiante = () => {
                         {!isSidebarCollapsed && (
                             <div className="project-info">
                                 <h3>
-                                    Sistema de Evaluación Basada en Proyecto
+                                    Sistema de Evaluación Basada en Proyectos
                                 </h3>
                             </div>
                         )}

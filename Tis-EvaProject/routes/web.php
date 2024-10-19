@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProyectoController;
+use App\Http\Controllers\ProyectosController;
 use App\Http\Controllers\AuthController;
 
 Route::get('/', function () {
@@ -40,17 +40,19 @@ Route::get('/forgot-password', function () {
     return view('welcome');  // Renderiza el componente HomePage en React
 });
 
-Route::get('/proyectos', [ProyectoController::class, 'index']);
-Route::post('/proyectos', [ProyectoController::class, 'store']);
-Route::get('/proyectos/{id}', [ProyectoController::class, 'show']);
-Route::put('/proyectos/{id}', [ProyectoController::class, 'update']);
-Route::delete('/proyectos/{id}', [ProyectoController::class, 'destroy']);
+Route::middleware(['auth:docente'])->group(function () {
+    Route::get('/proyectos', [ProyectosController::class, 'index']);
+    Route::post('/proyectos', [ProyectosController::class, 'store']);
+    Route::get('/proyectos/{id}', [ProyectosController::class, 'show']);
+    Route::put('/proyectos/{id}', [ProyectosController::class, 'update']);
+    Route::delete('/proyectos/{id}', [ProyectosController::class, 'destroy']);
+});
 
 Route::get('/test', function () {
     return 'Ruta de prueba funcionando';
 });
 
-Route::get('/test-controller', [ProyectoController::class, 'index']);
+Route::get('/test-controller', [ProyectosController::class, 'index']);
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);

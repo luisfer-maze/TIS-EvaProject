@@ -15,45 +15,50 @@ function App() {
     };
 
     const handleLogin = async (event) => {
-      event.preventDefault();
-      try {
-        // Obtener el token CSRF desde el meta tag
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-  
-        const response = await fetch('/login', { // Asegúrate de que la ruta es correcta
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': csrfToken, // Incluye el token CSRF en los encabezados
-          },
-          body: JSON.stringify({
-            email,
-            password,
-            role,
-          }),
-        });
-  
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Error en la respuesta del servidor');
+        event.preventDefault();
+        try {
+            // Obtener el token CSRF desde el meta tag
+            const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                .getAttribute("content");
+
+            const response = await fetch("/login", {
+                // Asegúrate de que la ruta es correcta
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-CSRF-TOKEN": csrfToken, // Incluye el token CSRF en los encabezados
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    role,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(
+                    errorData.error || "Error en la respuesta del servidor"
+                );
+            }
+
+            const data = await response.json();
+            console.log("Login exitoso:", data);
+
+            // Redirige según el rol
+            if (data.role === "Docente") {
+                navigate("/proyectos");
+            } else if (data.role === "Estudiante") {
+                navigate("/planificacion-estudiante");
+            }
+        } catch (error) {
+            console.error("Error:", error.message);
+            // Aquí puedes manejar el error y mostrar un mensaje al usuario
         }
-  
-        const data = await response.json();
-        console.log('Login exitoso:', data);
-  
-        // Redirige según el rol
-        if (data.role === 'Docente') {
-          navigate('/proyecto');
-        } else if (data.role === 'Estudiante') {
-          navigate('/planificacion-estudiante');
-        }
-      } catch (error) {
-        console.error('Error:', error.message);
-        // Aquí puedes manejar el error y mostrar un mensaje al usuario
-      }
     };
-  
+
     return (
         <div
             className="app-background"

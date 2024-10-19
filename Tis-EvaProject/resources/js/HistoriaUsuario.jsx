@@ -62,7 +62,7 @@ const HistoriaUsuario = () => {
                         {!isSidebarCollapsed && (
                             <div className="project-info">
                                 <h3>
-                                    Sistema de Evaluación Basada en Proyecto
+                                    Sistema de Evaluación Basada en Proyectos
                                 </h3>
                             </div>
                         )}

@@ -2,18 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Proyecto;
+use App\Models\Proyectos;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage; // Importa la clase Storage
 
-class ProyectoController extends Controller
+class ProyectosController extends Controller
 {
     // Mostrar todos los proyectos
     public function index()
     {
-        $proyectos = Proyecto::all();
+        // Obtén el ID del docente autenticado
+        $docenteId = auth()->guard('docente')->id(); // Obtén el ID del docente autenticado
+
+        // Filtrar proyectos por el ID del docente
+        $proyectos = Proyectos::where('ID_DOCENTE', $docenteId)->get();
+
         return response()->json($proyectos);
     }
+
 
     // Crear un nuevo proyecto
     public function store(Request $request)
@@ -26,18 +32,23 @@ class ProyectoController extends Controller
             'PORTADA_PROYECTO' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
+        // Obtener el ID del docente autenticado
+        $docenteId = auth()->guard('docente')->id();
+
         // Guardar la imagen si está presente
-        $imagePath = $request->hasFile('PORTADA_PROYECTO') 
+        $imagePath = $request->hasFile('PORTADA_PROYECTO')
             ? $request->file('PORTADA_PROYECTO')->store('proyectos', 'public')
             : null;
 
-        $proyecto = Proyecto::create([
+        // Crear el proyecto con el ID_DOCENTE
+        $proyecto = Proyectos::create([
             'ID_PROYECTO' => uniqid(),
             'NOMBRE_PROYECTO' => $request->NOMBRE_PROYECTO,
             'DESCRIP_PROYECTO' => $request->DESCRIP_PROYECTO,
             'FECHA_INICIO_PROYECTO' => $request->FECHA_INICIO_PROYECTO,
             'FECHA_FIN_PROYECTO' => $request->FECHA_FIN_PROYECTO,
             'PORTADA_PROYECTO' => $imagePath,
+            'ID_DOCENTE' => $docenteId, // Aquí se guarda el ID del docente
         ]);
 
         return response()->json($proyecto, 201);
@@ -46,10 +57,12 @@ class ProyectoController extends Controller
     // Actualizar un proyecto existente
     public function update(Request $request, $id)
     {
-        $proyecto = Proyecto::find($id);
+        $proyecto = Proyectos::where('ID_PROYECTO', $id)
+            ->where('ID_DOCENTE', auth()->guard('docente')->id()) // Asegúrate de que el proyecto pertenece al docente autenticado
+            ->first();
 
         if (!$proyecto) {
-            return response()->json(['message' => 'Proyecto no encontrado'], 404);
+            return response()->json(['message' => 'Proyecto no encontrado o no autorizado'], 404);
         }
 
         $request->validate([
@@ -85,7 +98,7 @@ class ProyectoController extends Controller
     // Eliminar un proyecto
     public function destroy($id)
     {
-        $proyecto = Proyecto::find($id);
+        $proyecto = Proyectos::find($id);
 
         if (!$proyecto) {
             return response()->json(['message' => 'Proyecto no encontrado'], 404);
