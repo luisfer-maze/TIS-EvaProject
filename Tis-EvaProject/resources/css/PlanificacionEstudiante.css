@@ -446,7 +446,6 @@ textarea {
     flex-direction: column;
     width: 100%; /* Asegura que ocupe el ancho completo */
     gap: 10px;
-    margin-bottom: 15px;
 }
 
 .adjuntos-info {
@@ -454,7 +453,7 @@ textarea {
     align-items: center;
     justify-content: space-between;
     background-color: #e0e0e0;
-    padding: 10px;
+    padding: 5px;
     border-radius: 4px;
 }
 
@@ -462,7 +461,7 @@ textarea {
     background-color: #1e88e5;
     color: white;
     border: none;
-    padding: 10px;
+    padding: 7px;
     border-radius: 4px;
     cursor: pointer;
 }

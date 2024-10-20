@@ -8,57 +8,76 @@
     box-sizing: border-box;
 }
 
-.historia-usuario-wrapper {
+.historia-usuario-contenido {
+    width: 800px !important; /* Asegura que este ancho tenga prioridad */
+    margin: 0 auto;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-sizing: border-box;
-    padding: 20px;
-}
-
-.historia-usuario-contenido {
-    width: 100%;
-    height: 800px;
-    max-width: 800px; /* Limita el ancho máximo */
-    margin: 0 auto; /* Asegura el centrado horizontal */
 }
 
 .hu-container {
     background-color: #fff;
     border-radius: 8px;
-    padding: 20px;
+    padding: 15px;
+    width: 100%;
+    height: 820px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 /* -------------------------------------- Header -------------------------------------- */
+/* Estilo del header con título y botón */
 .hu-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 10px 10px; /* Aumentar espacio alrededor */
+    border-radius: 8px; /* Bordes redondeados */
 }
 
+/* Título más grande y con peso */
 .hu-header h1 {
-    font-size: 24px;
+    font-size: 28px; /* Tamaño mayor para destacar */
+    font-weight: bold;
+    color: #333; /* Texto en color oscuro */
     margin: 0;
+    margin-bottom: 15px; /* Añade espacio debajo del título */
 }
 
-.hu-header p {
-    color: #666;
+/* Subtítulo con color más tenue */
+.hu-header p.hu-subtitulo {
+    font-size: 18px; /* Aumentar tamaño de fuente */
+    font-weight: bold; /* Para hacerlo más destacado */
+    color: #666; /* Mantener el color original */
+    margin-top: 4px; /* Ajustar margen si es necesario */
 }
-/* -------------------------------------- Header -------------------------------------- */
+
+/* Botón de edición mejorado */
 .hu-edit-button {
     background-color: #1e88e5;
     color: white;
-    padding: 8px 12px;
+    padding: 5px 5px; /* Botón más grande */
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
+    font-size: 14px; /* Texto del botón más grande */
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    align-self: flex-end; /* Coloca el botón en la parte inferior */
 }
 
+/* Ícono de edición dentro del botón */
+.hu-edit-button i {
+    margin-left: 5px; /* Espacio entre el texto y el ícono */
+}
+
+/* -------------------------------------- Header -------------------------------------- */
+
 .hu-section {
-    margin-top: 20px;
+    margin-top: 10px;
     background-color: #f4f4f4;
-    padding: 15px;
+    padding: 10px;
     border-radius: 8px;
+    box-sizing: border-box;
 }
 
 .hu-section h3 {
@@ -74,22 +93,118 @@
     cursor: pointer;
 }
 
-.adjuntos-container {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
 
-.adjunto-imagen {
-    max-width: 100px;
+
+/* Contenedor combinado para Descripción y Criterios */
+.hu-contenido-unido {
+    padding: 10px;
     border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e0e0e0; /* Borde más definido */
+    display: flex;
+    flex-direction: column; /* Asegura que el contenido fluya verticalmente */
+    position: relative; /* Necesario para usar absolute positioning */
 }
 
+/* Títulos dentro del contenedor combinado */
+.hu-contenido-unido h3 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px; /* Mayor separación debajo del título */
+}
+
+/* Texto y listas */
+.hu-contenido-unido p,
+.hu-contenido-unido ul {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #444;
+}
+
+/* Lista de criterios de aceptación */
+.hu-contenido-unido ul {
+    padding-left: 20px;
+}
+
+.hu-contenido-unido ul li {
+    margin-bottom: 10px; /* Mayor espacio entre los puntos de la lista */
+}
+
+
+.hu-contenido-unido .hu-edit-button i {
+    margin-left: 5px;
+}
+
+.hu-contenido-unido .hu-edit-button {
+    display: flex;
+    align-self: flex-end; /* Mueve el botón hacia la derecha */
+    align-items: center;
+    float: right; /* Alinea el botón a la derecha */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*-----------------adjuntos-----------*/
+.adjuntos-info h3 {
+    margin: 0; /* Elimina el margen superior e inferior para el título */
+    display: flex;
+    align-items: center; /* Asegura que el texto esté alineado verticalmente dentro del contenedor */
+    font-size: 16px; /* Ajusta el tamaño de la fuente si es necesario */
+}
+
+/* Zona de arrastrar específica para la historia de usuario */
+.drag-drop-zone-historia {
+    margin-top: 10px;
+    padding: 10px;
+    border: 2px dashed #1e88e5;
+    border-radius: 4px;
+    text-align: center;
+    color: #1e88e5;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px; /* Ajusta la altura según la necesidad */
+    max-height: 150px; /* Limita la altura */
+}
+
+.drag-drop-zone-historia .drag-drop-text {
+    font-size: 14px;
+    color: #1e88e5;
+}
+/*-----------------adjuntos-----------*/
+/*-----------------tareas-------------*/
+/* Información de tareas (cabecera) */
+.tareas-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #e0e0e0;
+    padding: 10px;
+    border-radius: 4px 4px 0 0;
+    border-bottom: 1px solid #ccc;
+}
+
+/* Lista de tareas */
 .tareas-lista {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
+/* Item de tarea */
 .tarea-item {
     background-color: #f4f4f4;
     padding: 10px;
@@ -98,14 +213,33 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Contenido de la tarea */
+.tarea-contenido {
+    display: flex;
+    align-items: center;
+}
+
+/* Acciones de la tarea */
 .tarea-acciones {
     display: flex;
+    align-items: center;
     gap: 10px;
 }
 
+/* Iconos de editar y eliminar */
 .icono-editar,
 .icono-eliminar {
     cursor: pointer;
+}
+
+/* Imagen de perfil en las tareas */
+.tarea-perfil-imagen {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
 }

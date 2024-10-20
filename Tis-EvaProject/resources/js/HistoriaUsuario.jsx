@@ -98,93 +98,110 @@ const HistoriaUsuario = () => {
                 </aside>
 
                 {/* Contenido principal */}
-                <div className="historia-usuario-wrapper">
-                    <div className="historia-usuario-contenido">
-                        <div className="hu-container">
-                            <div className="hu-header">
-                                <div className="hu-header-text">
-                                    <h1 className="hu-titulo">
-                                        {historia.titulo}
-                                    </h1>
-                                    <p className="hu-subtitulo">
-                                        HISTORIA DE USUARIO
-                                    </p>
-                                </div>
-                                <button className="hu-edit-button">
-                                    Editar <i className="fas fa-edit"></i>
-                                </button>
-                            </div>
 
-                            <div className="hu-section hu-description">
-                                <h3>Descripción</h3>
-                                <p>{historia.descripcion}</p>
+                <div className="historia-usuario-contenido">
+                    <div className="hu-container">
+                        <div className="hu-header">
+                            <div className="hu-header-text">
+                                <h1 className="hu-titulo">{historia.titulo}</h1>
+                                <p className="hu-subtitulo">
+                                    HISTORIA DE USUARIO
+                                </p>
                             </div>
+                            <button className="hu-edit-button">
+                                Editar <i className="fas fa-edit"></i>
+                            </button>
+                        </div>
 
-                            <div className="hu-section hu-criterios">
-                                <h3>Criterios de aceptación:</h3>
-                                <ul>
-                                    <li>
-                                        Debe existir un formulario de registro
-                                        específico.
-                                    </li>
-                                    <li>
-                                        El formulario debe tener campos de
-                                        nombre, correo, etc.
-                                    </li>
-                                    <li>
-                                        Debe permitir subir una foto de perfil.
-                                    </li>
-                                </ul>
-                                <button className="hu-edit-button">
-                                    Editar
-                                </button>
-                            </div>
+                        <div className="hu-section hu-contenido-unido">
+                            <h3>Descripción</h3>
+                            <p>{historia.descripcion}</p>
 
-                            <div className="hu-section hu-adjuntos">
-                                <h3>Adjuntos</h3>
-                                <div className="adjuntos-container">
+                            <h3>Criterios de aceptación:</h3>
+                            <ul>
+                                <li>
+                                    Debe existir un formulario de registro
+                                    específico.
+                                </li>
+                                <li>
+                                    El formulario debe tener campos de nombre,
+                                    correo, etc.
+                                </li>
+                                <li>Debe permitir subir una foto de perfil.</li>
+                            </ul>
+                            <button className="hu-edit-button">
+                                Editar <i className="fas fa-edit"></i>
+                            </button>
+                        </div>
+
+                        <div className="hu-section hu-adjuntos">
+                            <div className="adjuntos-info">
+                                <h3>
                                     {historia.adjuntos &&
-                                    historia.adjuntos.length > 0 ? (
-                                        historia.adjuntos.map(
-                                            (adjunto, index) => (
-                                                <img
-                                                    key={index}
-                                                    src={adjunto.url}
-                                                    alt="Adjunto"
-                                                    className="adjunto-imagen"
-                                                />
-                                            )
-                                        )
-                                    ) : (
-                                        <p>No hay adjuntos disponibles</p>
-                                    )}
-                                </div>
-                                <button className="hu-add-button">+</button>
+                                    historia.adjuntos.length > 0
+                                        ? `${historia.adjuntos.length} adjuntos`
+                                        : "Adjuntos"}
+                                </h3>
+                                <button className="boton-adjuntar">
+                                    <i className="fas fa-plus"></i>
+                                </button>
                             </div>
+                            <div className="adjuntos-container">
+                                {historia.adjuntos &&
+                                historia.adjuntos.length > 0 ? (
+                                    historia.adjuntos.map((adjunto, index) => (
+                                        <div
+                                            key={index}
+                                            className="drag-drop-zone-historia"
+                                        >
+                                            <img
+                                                src={adjunto.url}
+                                                alt="Adjunto"
+                                                className="adjunto-imagen"
+                                            />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="drag-drop-zone-historia">
+                                        <p className="drag-drop-text">
+                                            ¡Arrastre los archivos adjuntos
+                                            aquí!
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
 
-                            <div className="hu-section hu-tareas">
+                        <div className="hu-section hu-tareas">
+                            <div className="adjuntos-info">
                                 <h3>Tareas</h3>
-                                <ul className="tareas-lista">
-                                    {historia.tareas &&
-                                    historia.tareas.length > 0 ? (
-                                        historia.tareas.map((tarea, index) => (
-                                            <li
-                                                key={index}
-                                                className="tarea-item"
-                                            >
-                                                <span>{tarea}</span>
-                                                <div className="tarea-acciones">
-                                                    <i className="fas fa-edit icono-editar"></i>
-                                                    <i className="fas fa-trash-alt icono-eliminar"></i>
-                                                </div>
-                                            </li>
-                                        ))
-                                    ) : (
-                                        <p>No hay tareas disponibles</p>
-                                    )}
-                                </ul>
-                                <button className="hu-add-button">+</button>
+                                <button className="boton-adjuntar">
+                                    <i className="fas fa-plus"></i>
+                                </button>
                             </div>
+                            <ul className="tareas-lista">
+                                {historia.tareas &&
+                                historia.tareas.length > 0 ? (
+                                    historia.tareas.map((tarea, index) => (
+                                        <li key={index} className="tarea-item">
+                                            <div className="tarea-contenido">
+                                                <span>{tarea}</span>
+                                            </div>
+                                            <div className="tarea-acciones">
+                                                <i className="fas fa-trash-alt icono-eliminar"></i>
+                                                <i className="fas fa-edit icono-editar"></i>
+                                                <img
+                                                    src="https://via.placeholder.com/40"
+                                                    alt="Perfil"
+                                                    className="tarea-perfil-imagen"
+                                                />
+                                            </div>
+                                        </li>
+                                    ))
+                                ) : (
+                                    <p>No hay tareas disponibles</p>
+                                )}
+                            </ul>
                         </div>
                     </div>
                 </div>
