@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"; // Importación de useNavigate
 import "../css/PlanificacionEstudiante.css";
 import "../css/Sidebar.css";
 import "../css/Proyectos.css";
+import "../css/HistoriaUsuario.css";  
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 const PlanificacionEstudiante = () => {
@@ -22,6 +23,7 @@ const PlanificacionEstudiante = () => {
         fechaInicio: "",
         fechaFin: "",
     });
+    const [selectedImage, setSelectedImage] = useState(null);
     const [isReqModalOpen, setReqModalOpen] = useState(false);
     const [isModalOpenHU, setIsModalOpenHU] = useState(false);
     const [nuevoReq, setNuevoReq] = useState("");
@@ -40,7 +42,9 @@ const PlanificacionEstudiante = () => {
         setIsModalOpen(false);
         setNuevoSprint({ nombre: "", fechaInicio: "", fechaFin: "" });
     };
-
+    const closeModal = () => {
+        setSelectedImage(null); // Cierra el modal cuando se hace clic fuera de la imagen
+    };
     const editarRequerimiento = (index) => {
         const req = requerimientos[index];
         setNuevoReq(req); // Cargar el valor actual en el input del modal
@@ -49,7 +53,7 @@ const PlanificacionEstudiante = () => {
 
     const editarHistoriaUsuario = (index) => {
         navigate(`/historia-usuario/${index}`, {
-            state: { historia: historiasUsuario[index] },
+            state: { historia: historiasUsuario[index], numero: index + 1 },
         });
     };
 
@@ -144,23 +148,72 @@ const PlanificacionEstudiante = () => {
     };
 
     const guardarHU = () => {
+        // Verifica si ya existe una historia con el mismo título
+        const historiaDuplicada = historiasUsuario.some(
+            (historia) => historia.titulo === nuevaHU.titulo
+        );
+
+        if (historiaDuplicada) {
+            alert("Ya existe una historia con este nombre.");
+            return; // Detiene el proceso de creación si hay un duplicado
+        }
+
         if (nuevaHU.titulo && nuevaHU.descripcion) {
-            // Almacenamos solo el título en historiasUsuario (o cambia según lo que desees mostrar)
-            setHistoriasUsuario([...historiasUsuario, nuevaHU]);
+            const nuevaHistoria = {
+                titulo: nuevaHU.titulo,
+                descripcion: nuevaHU.descripcion,
+            };
+            setHistoriasUsuario([...historiasUsuario, nuevaHistoria]); // Asegúrate de que siempre estás agregando un objeto con las propiedades correctas.
             cerrarModalHU();
+        } else {
+            alert("Debes completar el título y la descripción");
         }
     };
 
-    const onDragStart = (e, historia) =>
-        e.dataTransfer.setData("historia", historia);
-    const onDrop = (e, sprintIndex) => {
-        const historia = e.dataTransfer.getData("historia");
-        const newSprints = [...sprints];
-        newSprints[sprintIndex].historias.push(historia);
-        setSprints(newSprints);
+    const onDragStart = (e, index, source) => {
+        e.dataTransfer.setData("index", index); // Guarda el índice de la historia
+        e.dataTransfer.setData("source", source); // Guarda el origen de la historia (historiasUsuario o sprint)
+    };
+    // Función para manejar cuando se suelta la historia
+    const onDrop = (e, destinoIndex, destinoType) => {
+        e.preventDefault();
+        const origenIndex = parseInt(e.dataTransfer.getData("index"), 10); // Recupera el índice de la historia arrastrada
+        const origenType = e.dataTransfer.getData("source"); // Recupera el origen de la historia (historiasUsuario o sprint)
+
+        if (!isNaN(origenIndex)) {
+            // Si estamos moviendo de historiasUsuario a sprint
+            if (origenType === "historiasUsuario" && destinoType === "sprint") {
+                // Clonar la historia en lugar de eliminarla del backlog
+                const historiaClonada = { ...historiasUsuario[origenIndex] };
+
+                // Actualizar la lista de sprints
+                const sprintsActualizados = [...sprints];
+                sprintsActualizados[destinoIndex].historias.push(
+                    historiaClonada
+                ); // Inserta la copia de la historia en el sprint
+
+                setSprints(sprintsActualizados); // Actualiza el estado de sprints
+                // NO eliminamos la historia de historiasUsuario
+            } else if (
+                origenType === "historiasUsuario" &&
+                destinoType === "historiasUsuario"
+            ) {
+                // Reordenar las historias en la misma lista
+                const historiasReordenadas = [...historiasUsuario];
+                const [historiaMovida] = historiasReordenadas.splice(
+                    origenIndex,
+                    1
+                ); // Elimina la historia del índice original
+                historiasReordenadas.splice(destinoIndex, 0, historiaMovida); // Inserta la historia en el nuevo índice
+                setHistoriasUsuario(historiasReordenadas); // Actualiza la lista de historias
+            }
+        }
     };
 
-    const onDragOver = (e) => e.preventDefault();
+    const onDragOver = (e) => {
+        e.preventDefault(); // Permite el drop
+    };
+
     const removeItem = (list, setList, index) =>
         setList(list.filter((_, i) => i !== index));
     const removeHistoriaFromSprint = (sprintIndex, historiaIndex) => {
@@ -324,10 +377,35 @@ const PlanificacionEstudiante = () => {
                                             className="item-historia"
                                             draggable
                                             onDragStart={(e) =>
-                                                onDragStart(e, historia.titulo)
+                                                onDragStart(
+                                                    e,
+                                                    index,
+                                                    "historiasUsuario"
+                                                )
+                                            }
+                                            onDragOver={onDragOver}
+                                            onDrop={(e) =>
+                                                onDrop(
+                                                    e,
+                                                    index,
+                                                    "historiasUsuario"
+                                                )
                                             }
                                         >
-                                            <span>{historia.titulo}</span>
+                                            {/* Se agrega el número secuencial seguido del título */}
+                                            {typeof historia === "object" &&
+                                            historia !== null ? (
+                                                <span>
+                                                    #{index + 1}{" "}
+                                                    {historia.titulo}{" "}
+                                                    {/* Mostrando el número secuencial */}
+                                                </span>
+                                            ) : (
+                                                <span>
+                                                    Error: historia no es un
+                                                    objeto válido
+                                                </span>
+                                            )}
                                             <div className="iconos-acciones">
                                                 <i
                                                     className="fas fa-edit icono-editar"
@@ -352,9 +430,8 @@ const PlanificacionEstudiante = () => {
                                 </div>
                             )}
                             <button
-                                className="boton-agregar"
-                                onClick={abrirModalHU}
-                            >
+                                className="boton-anadir-sprint"
+                                onClick={abrirModalHU}>
                                 + Historia de usuario
                             </button>
                         </div>
@@ -371,8 +448,54 @@ const PlanificacionEstudiante = () => {
                                         <div
                                             key={index}
                                             className="sprint"
-                                            onDrop={(e) => onDrop(e, index)}
-                                            onDragOver={onDragOver}
+                                            onDrop={(e) => {
+                                                e.preventDefault(); // Evita el comportamiento por defecto
+                                                const historiaIndex =
+                                                    e.dataTransfer.getData(
+                                                        "index"
+                                                    );
+                                                if (historiaIndex !== null) {
+                                                    const historiaArrastrada =
+                                                        historiasUsuario[
+                                                            historiaIndex
+                                                        ];
+
+                                                    // Verifica si la historia ya existe en el sprint
+                                                    const yaExiste =
+                                                        sprint.historias.some(
+                                                            (historia) =>
+                                                                historia.titulo ===
+                                                                historiaArrastrada.titulo
+                                                        );
+
+                                                    if (!yaExiste) {
+                                                        // Si no existe, la agregamos al sprint
+                                                        const sprintActualizado =
+                                                            {
+                                                                ...sprint,
+                                                                historias: [
+                                                                    ...sprint.historias,
+                                                                    historiaArrastrada,
+                                                                ],
+                                                            };
+                                                        const sprintsActualizados =
+                                                            [...sprints];
+                                                        sprintsActualizados[
+                                                            index
+                                                        ] = sprintActualizado;
+                                                        setSprints(
+                                                            sprintsActualizados
+                                                        );
+                                                    } else {
+                                                        alert(
+                                                            "Esta historia ya está en el sprint."
+                                                        ); // Evita duplicados
+                                                    }
+                                                }
+                                            }}
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
+                                            } // Permitir arrastrar elementos sobre el contenedor
                                         >
                                             <div className="sprint-header">
                                                 <h3 className="sprint-titulo">
@@ -410,18 +533,29 @@ const PlanificacionEstudiante = () => {
                                                                 key={i}
                                                                 className="item-historia-sprint"
                                                             >
+                                                                {/* Aquí se muestra el número de la historia más su título */}
                                                                 <span>
-                                                                    {historia}
-                                                                </span>
-                                                                <i
-                                                                    className="fas fa-trash-alt icono-eliminar"
-                                                                    onClick={() =>
-                                                                        removeHistoriaFromSprint(
-                                                                            index,
-                                                                            i
-                                                                        )
+                                                                    #
+                                                                    {historiasUsuario.findIndex(
+                                                                        (h) =>
+                                                                            h.titulo ===
+                                                                            historia.titulo
+                                                                    ) + 1}{" "}
+                                                                    {
+                                                                        historia.titulo
                                                                     }
-                                                                ></i>
+                                                                </span>
+                                                                <div className="iconos-acciones">
+                                                                    <i
+                                                                        className="fas fa-trash-alt icono-eliminar"
+                                                                        onClick={() =>
+                                                                            removeHistoriaFromSprint(
+                                                                                index,
+                                                                                i
+                                                                            )
+                                                                        }
+                                                                    ></i>
+                                                                </div>
                                                             </div>
                                                         )
                                                     )
@@ -601,6 +735,9 @@ const PlanificacionEstudiante = () => {
                                         <div
                                             key={index}
                                             className="preview-item"
+                                            onClick={() =>
+                                                setSelectedImage(file.preview)
+                                            } // Al hacer clic en la imagen, abrirá el modal
                                         >
                                             <img
                                                 src={file.preview}
@@ -608,9 +745,10 @@ const PlanificacionEstudiante = () => {
                                             />
                                             <button
                                                 className="boton-eliminar"
-                                                onClick={() =>
-                                                    eliminarArchivo(index)
-                                                }
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // Evita que el clic de eliminación abra el modal
+                                                    eliminarArchivo(index);
+                                                }}
                                             >
                                                 <i className="fas fa-trash-alt"></i>
                                             </button>
@@ -618,6 +756,24 @@ const PlanificacionEstudiante = () => {
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Modal para zoom de imagen */}
+                            {selectedImage && (
+                                <div
+                                    className="image-modal"
+                                    onClick={closeModal}
+                                >
+                                    <div
+                                        className="image-modal-content"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <img
+                                            src={selectedImage}
+                                            alt="Imagen grande"
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="hu-modal-buttons">
