@@ -179,36 +179,32 @@ const PlanificacionEstudiante = () => {
         e.preventDefault();
         const origenIndex = parseInt(e.dataTransfer.getData("index"), 10); // Recupera el índice de la historia arrastrada
         const origenType = e.dataTransfer.getData("source"); // Recupera el origen de la historia (historiasUsuario o sprint)
-
+    
         if (!isNaN(origenIndex)) {
             // Si estamos moviendo de historiasUsuario a sprint
             if (origenType === "historiasUsuario" && destinoType === "sprint") {
-                // Clonar la historia en lugar de eliminarla del backlog
-                const historiaClonada = { ...historiasUsuario[origenIndex] };
-
-                // Actualizar la lista de sprints
+                // En lugar de clonar la historia, pasar la referencia original
+                const historiaReferenciada = historiasUsuario[origenIndex]; // Referencia directa al objeto original
+    
+                // Actualizar la lista de sprints añadiendo la referencia a la historia
                 const sprintsActualizados = [...sprints];
-                sprintsActualizados[destinoIndex].historias.push(
-                    historiaClonada
-                ); // Inserta la copia de la historia en el sprint
-
+                sprintsActualizados[destinoIndex].historias.push(historiaReferenciada); // Inserta la referencia de la historia en el sprint
+    
                 setSprints(sprintsActualizados); // Actualiza el estado de sprints
-                // NO eliminamos la historia de historiasUsuario
+                // No eliminamos la historia de historiasUsuario
             } else if (
                 origenType === "historiasUsuario" &&
                 destinoType === "historiasUsuario"
             ) {
                 // Reordenar las historias en la misma lista
                 const historiasReordenadas = [...historiasUsuario];
-                const [historiaMovida] = historiasReordenadas.splice(
-                    origenIndex,
-                    1
-                ); // Elimina la historia del índice original
+                const [historiaMovida] = historiasReordenadas.splice(origenIndex, 1); // Elimina la historia del índice original
                 historiasReordenadas.splice(destinoIndex, 0, historiaMovida); // Inserta la historia en el nuevo índice
                 setHistoriasUsuario(historiasReordenadas); // Actualiza la lista de historias
             }
         }
     };
+    
 
     const onDragOver = (e) => {
         e.preventDefault(); // Permite el drop
