@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+import HeaderProyecto from "../Components/HeaderProyecto";
 import "../../css/Proyectos.css";
+import "../../css/HeaderProyecto.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 const Proyectos = () => {
@@ -158,13 +160,7 @@ const Proyectos = () => {
 
     return (
         <div>
-            <div className={`header ${isModalOpen ? "disabled" : ""}`}>
-                <div className="logo"></div>
-                <div className="user-icon-container">
-                    <i className="fas fa-user-circle user-icon"></i>
-                    <i className="fas fa-chevron-down dropdown-icon"></i>
-                </div>
-            </div>
+            <HeaderProyecto isModalOpen={isModalOpen} />
 
             <div className={`container ${isModalOpen ? "disabled" : ""}`}>
                 <div className="projects-header">

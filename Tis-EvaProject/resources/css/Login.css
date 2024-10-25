@@ -144,6 +144,7 @@ button:not(
         .btn,
         .hu-addj-button,
         .hu-add-button,
+        .dropdown-button,
         .new-project-btn
     ) {
     background-color: #0072ce;
