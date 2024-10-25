@@ -1,14 +1,14 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Login from './Login';
-import Proyectos from './Proyectos';
-import HomePage from './HomePage';
-import Register from './Register';  // Importamos Register
-import ForgotPassword from './ForgotPassword';  // Importamos ForgotPassword
-import ProyectoEstudiante from  './ProyectoEstudiante';   // Importamos ProyectoEstudiante
-import PlanificacionEstudiante from  './PlanificacionEstudiante';  // Importamos PlanificacionEstudiante
-import HistoriaUsuario from   './HistoriaUsuario';  // Importamos HistoriaUsuario
+import Login from './Pages/Login';
+import Proyectos from './Pages/Proyectos';
+import HomePage from './Pages/HomePage';
+import Register from './Pages/Register';  // Importamos Register
+import ForgotPassword from './Pages/ForgotPassword';  // Importamos ForgotPassword
+import ProyectoEstudiante from  './Pages/ProyectoEstudiante';   // Importamos ProyectoEstudiante
+import PlanificacionEstudiante from  './Pages/PlanificacionEstudiante';  // Importamos PlanificacionEstudiante
+import HistoriaUsuario from   './Pages/HistoriaUsuario';  // Importamos HistoriaUsuario
 
 function App() {
   return (

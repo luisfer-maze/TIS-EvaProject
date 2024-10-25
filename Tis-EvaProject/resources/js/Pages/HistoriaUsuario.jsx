@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import ReactQuill from "react-quill"; // Importar ReactQuill
+import ReactQuill from 'react-quill';
+import Sidebar from "../Components/Sidebar";
+import Header from "../Components/Header";
 import "react-quill/dist/quill.snow.css"; // Importar el CSS del tema
-import "../css/Sidebar.css"; // Importa el CSS del sidebar
-import "../css/PlanificacionEstudiante.css"; // Importa el CSS del header
-import "../css/HistoriaUsuario.css"; // Importa tu CSS específico
+import "../../css/Sidebar.css"; // Importa el CSS del sidebar
+import "../../css/PlanificacionEstudiante.css"; // Importa el CSS del header
+import "../../css/HistoriaUsuario.css"; // Importa tu CSS específico
 
 const HistoriaUsuario = () => {
     const location = useLocation();
@@ -192,68 +194,14 @@ const HistoriaUsuario = () => {
 
     return (
         <div
-            className={`historia-usuario planificacion-pagina ${
-                isSidebarCollapsed ? "sidebar-collapsed" : ""
-            }`}
-        >
-            {/* Header */}
-            <div className="header-planificacion">
-                <div className="logo"></div>
-                <div className="iconos-usuario-planificacion">
-                    <i className="fas fa-user-circle icono-usuario"></i>
-                    <i className="fas fa-chevron-down icono-dropdown"></i>
-                </div>
-            </div>
-
-            {/* Sidebar y Contenido */}
-            <div className="contenido-con-sidebar">
-                <aside
-                    className={`sidebar ${
-                        isSidebarCollapsed ? "collapsed" : ""
-                    }`}
-                >
-                    {/* Sidebar content */}
-                    <div className="sidebar-header">
-                        <div className="project-icon">
-                            <i className="fas fa-project-diagram"></i>
-                        </div>
-                        {!isSidebarCollapsed && (
-                            <div className="project-info">
-                                <h3>
-                                    Sistema de Evaluación Basada en Proyectos
-                                </h3>
-                            </div>
-                        )}
-                    </div>
-                    <hr className="divisor-side" />
-                    <ul className="sidebar-menu">
-                        <li className="menu-item">
-                            <i className="fas fa-tasks icon-menu"></i>
-                            <span className="menu-text">Product Backlog</span>
-                        </li>
-                        <li className="menu-item">
-                            <i className="fas fa-users icon-menu"></i>
-                            <span className="menu-text">Equipo</span>
-                        </li>
-                        <li className="menu-item">
-                            <i className="fas fa-book-open icon-menu"></i>
-                            <span className="menu-text">Tareas</span>
-                        </li>
-                    </ul>
-                    <hr className="divisor-side" />
-                    <button
-                        className="sidebar-collapse"
-                        onClick={toggleSidebar}
-                    >
-                        <i
-                            className={`fas ${
-                                isSidebarCollapsed
-                                    ? "fa-angle-right"
-                                    : "fa-angle-left"
-                            }`}
-                        ></i>
-                    </button>
-                </aside>
+            className={`historia-usuario planificacion-pagina ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}
+            >
+                <Header />
+                <div className="contenido-con-sidebar">
+                    <Sidebar
+                        isSidebarCollapsed={isSidebarCollapsed}
+                        toggleSidebar={toggleSidebar}
+                    />
 
                 {/* Contenido principal */}
 

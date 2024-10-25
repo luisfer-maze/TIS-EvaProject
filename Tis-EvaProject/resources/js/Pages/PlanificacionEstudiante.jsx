@@ -1,9 +1,11 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom"; // Importación de useNavigate
-import "../css/PlanificacionEstudiante.css";
-import "../css/Sidebar.css";
-import "../css/Proyectos.css";
-import "../css/HistoriaUsuario.css";  
+import Sidebar from "../Components/Sidebar";
+import Header from "../Components/Header";
+import "../../css/PlanificacionEstudiante.css";
+import "../../css/Sidebar.css";
+import "../../css/Proyectos.css";
+import "../../css/HistoriaUsuario.css";  
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 const PlanificacionEstudiante = () => {
@@ -246,65 +248,14 @@ const PlanificacionEstudiante = () => {
 
     return (
         <div
-            className={`planificacion-estudiante ${
-                isSidebarCollapsed ? "sidebar-collapsed" : ""
-            }`}
+            className={`planificacion-estudiante ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}
         >
-            <div className="header-planificacion">
-                <div className="logo"></div>
-                <div className="iconos-usuario-planificacion">
-                    <i className="fas fa-user-circle icono-usuario"></i>
-                    <i className="fas fa-chevron-down icono-dropdown"></i>
-                </div>
-            </div>
-
+            <Header />
             <div className="contenido-con-sidebar">
-                <aside
-                    className={`sidebar ${
-                        isSidebarCollapsed ? "collapsed" : ""
-                    }`}
-                >
-                    <div className="sidebar-header">
-                        <div className="project-icon">
-                            <i className="fas fa-project-diagram"></i>
-                        </div>
-                        {!isSidebarCollapsed && (
-                            <div className="project-info">
-                                <h3>
-                                    Sistema de Evaluación Basada en Proyectos
-                                </h3>
-                            </div>
-                        )}
-                    </div>
-                    <hr className="divisor-side" />
-                    <ul className="sidebar-menu">
-                        <li className="menu-item">
-                            <i className="fas fa-tasks icon-menu"></i>
-                            <span className="menu-text">Product Backlog</span>
-                        </li>
-                        <li className="menu-item">
-                            <i className="fas fa-users icon-menu"></i>
-                            <span className="menu-text">Equipo</span>
-                        </li>
-                        <li className="menu-item">
-                            <i className="fas fa-book-open icon-menu"></i>
-                            <span className="menu-text">Tareas</span>
-                        </li>
-                    </ul>
-                    <hr className="divisor-side" />
-                    <button
-                        className="sidebar-collapse"
-                        onClick={toggleSidebar}
-                    >
-                        <i
-                            className={`fas ${
-                                isSidebarCollapsed
-                                    ? "fa-angle-right"
-                                    : "fa-angle-left"
-                            }`}
-                        ></i>
-                    </button>
-                </aside>
+                <Sidebar
+                    isSidebarCollapsed={isSidebarCollapsed}
+                    toggleSidebar={toggleSidebar}
+                />
 
                 <div className="contenido-principal">
                     <div className="contenedor-titulo-planificacion">

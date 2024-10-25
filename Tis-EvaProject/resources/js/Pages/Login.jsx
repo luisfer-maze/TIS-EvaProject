@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Importa Link y useNavigate
-import "../css/Login.css";
+import "../../css/Login.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 function App() {
