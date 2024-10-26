@@ -1,32 +1,59 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../../css/Proyectos.css";
 
 const HeaderProyecto = ({ isModalOpen }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const dropdownTimeoutRef = useRef(null);
+    const [userData, setUserData] = useState({
+        nombre: "Usuario",
+        email: "usuario@correo.com",
+        foto: "https://via.placeholder.com/50"
+    });
 
-    const profileImageUrl = localStorage.getItem("PROFILE_IMAGE") || "https://via.placeholder.com/50";
-    const userName = localStorage.getItem("USER_NAME") || "Usuario";
-    const userEmail = localStorage.getItem("USER_EMAIL") || "usuario@correo.com";
+    const dropdownRef = useRef(null);
+    const closeTimeoutRef = useRef(null);
 
-    const handleMouseEnter = () => {
-        clearTimeout(dropdownTimeoutRef.current);
+    // Función para obtener los datos del usuario logueado
+    useEffect(() => {
+        fetch("http://localhost:8000/api/usuario-logueado", {
+            credentials: "include",
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.error) {
+                    setUserData({
+                        nombre: `${data.nombre} ${data.apellido}`,
+                        email: data.email,
+                        foto: data.foto,
+                    });
+                }
+            })
+            .catch(error => console.error("Error al cargar los datos del usuario:", error));
+    }, []);
+
+    // Función para alternar el menú desplegable
+    const toggleDropdown = () => {
+        setIsDropdownOpen(prevState => !prevState);
+    };
+
+    const openDropdown = () => {
+        if (closeTimeoutRef.current) {
+            clearTimeout(closeTimeoutRef.current);
+            closeTimeoutRef.current = null;
+        }
         setIsDropdownOpen(true);
     };
 
-    const handleMouseLeave = () => {
-        dropdownTimeoutRef.current = setTimeout(() => {
+    const closeDropdown = () => {
+        closeTimeoutRef.current = setTimeout(() => {
             setIsDropdownOpen(false);
-        }, 200);
+        }, 300); // Ajusta el tiempo según sea necesario
     };
 
-    const toggleDropdown = () => {
-        setIsDropdownOpen(!isDropdownOpen);
-    };
-
+    // Función para manejar las opciones del dropdown
     const handleOptionClick = (option) => {
         if (option === "logout") {
             const role = localStorage.getItem("ROLE");
+
             fetch("http://localhost:8000/logout", {
                 method: "POST",
                 headers: {
@@ -36,7 +63,7 @@ const HeaderProyecto = ({ isModalOpen }) => {
                 body: JSON.stringify({ role }),
                 credentials: "include",
             })
-                .then((response) => {
+                .then(response => {
                     if (!response.ok) {
                         throw new Error("Error al cerrar sesión");
                     }
@@ -46,82 +73,80 @@ const HeaderProyecto = ({ isModalOpen }) => {
                     localStorage.clear();
                     window.location.href = "/";
                 })
-                .catch((error) => console.error("Error al cerrar sesión:", error));
+                .catch(error => console.error("Error al cerrar sesión:", error));
         } else if (option === "profile") {
             window.location.href = "/perfil";
         }
         setIsDropdownOpen(false);
     };
 
-    const handleProfileImageClick = () => {
-        window.location.href = "/perfil";
-    };
-
     return (
         <div className={`header ${isModalOpen ? "disabled" : ""}`}>
+            <div className="logo"></div>
             <div
                 className="user-icon-container"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
+                onMouseEnter={openDropdown}
+                onMouseLeave={closeDropdown}
             >
                 <img
-                    src={profileImageUrl}
+                    src={userData.foto}
                     alt="Foto de perfil"
                     className="profile-image"
-                    onClick={handleProfileImageClick}
+                    onClick={() => handleOptionClick("profile")}
                 />
-                <i className="fas fa-chevron-down dropdown-icon" onClick={toggleDropdown}></i>
+                <i className="fas fa-chevron-down dropdown-icon"></i>
+            </div>
 
-                {isDropdownOpen && (
-                    <div
-                        className="dropdown-menu"
-                        onMouseEnter={handleMouseEnter}
-                        onMouseLeave={handleMouseLeave}
-                    >
-                        <div className="dropdown-header">
-                            <div className="profile-container">
-                                <img
-                                    src={profileImageUrl}
-                                    alt="Foto de perfil"
-                                    className="perfil-image"
-                                />
-                                <div className="profile-info">
-                                    <span className="user-name">{userName}</span>
-                                    <span className="user-email">{userEmail}</span>
-                                    <button
-                                        className="edit-profile-button"
-                                        onClick={() => handleOptionClick("profile")}
-                                    >
-                                        Editar perfil
-                                    </button>
-                                </div>
+            {isDropdownOpen && (
+                <div
+                    className="dropdown-menu"
+                    ref={dropdownRef}
+                    onMouseEnter={openDropdown}
+                    onMouseLeave={closeDropdown}
+                >
+                    <div className="dropdown-header">
+                        <div className="profile-container">
+                            <img
+                                src={userData.foto}
+                                alt="Foto de perfil"
+                                className="perfil-image"
+                            />
+                            <div className="profile-info">
+                                <span className="user-name">{userData.nombre}</span>
+                                <span className="user-email">{userData.email}</span>
+                                <button
+                                    className="edit-profile-button"
+                                    onClick={() => handleOptionClick("profile")}
+                                >
+                                    Editar perfil
+                                </button>
                             </div>
                         </div>
-                        <div className="dropdown-divider"></div>
-                        <ul className="dropdown-options">
-                            <li
-                                className="dropdown-button"
-                                onClick={() => handleOptionClick("settings")}
-                            >
-                                Configuración de cuenta
-                            </li>
-                            <li
-                                className="dropdown-button"
-                                onClick={() => handleOptionClick("notifications")}
-                            >
-                                Notificaciones
-                            </li>
-                        </ul>
-                        <div className="dropdown-divider"></div>
-                        <button
-                            className="logout-button"
-                            onClick={() => handleOptionClick("logout")}
-                        >
-                            Cerrar sesión
-                        </button>
                     </div>
-                )}
-            </div>
+                    <div className="dropdown-divider"></div>
+                    <ul className="dropdown-options">
+                        <li
+                            className="dropdown-button"
+                            onClick={() => handleOptionClick("settings")}
+                        >
+                            Configuración de cuenta
+                        </li>
+                        <li
+                            className="dropdown-button"
+                            onClick={() => handleOptionClick("notifications")}
+                        >
+                            Notificaciones
+                        </li>
+                    </ul>
+                    <div className="dropdown-divider"></div>
+                    <button
+                        className="logout-button"
+                        onClick={() => handleOptionClick("logout")}
+                    >
+                        Cerrar sesión
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

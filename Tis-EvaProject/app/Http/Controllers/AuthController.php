@@ -50,4 +50,27 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Cierre de sesión exitoso']);
     }
+
+    public function getLoggedUser()
+{
+    if (Auth::guard('docente')->check()) {
+        $user = Auth::guard('docente')->user();
+        return response()->json([
+            'nombre' => $user->NOMBRE_DOCENTE,
+            'apellido' => $user->APELLIDO_DOCENTE,
+            'email' => $user->EMAIL_DOCENTE,
+            'foto' => $user->FOTO_DOCENTE ?? 'https://via.placeholder.com/50'
+        ]);
+    } elseif (Auth::guard('estudiante')->check()) {
+        $user = Auth::guard('estudiante')->user();
+        return response()->json([
+            'nombre' => $user->NOMBRE_EST,
+            'apellido' => $user->APELLIDO_EST,
+            'email' => $user->EMAIL_EST,
+            'foto' => $user->FOTO_EST ?? 'https://via.placeholder.com/50'
+        ]);
+    }
+
+    return response()->json(['error' => 'No autenticado'], 401);
+}
 }
