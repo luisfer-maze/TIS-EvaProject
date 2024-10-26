@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import HeaderProyecto from "../Components/HeaderProyecto";
 import "../../css/Proyectos.css";
 import "../../css/HeaderProyecto.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 const Proyectos = () => {
+    const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [showCreateSuccessMessage, setShowCreateSuccessMessage] =
@@ -20,7 +22,7 @@ const Proyectos = () => {
     const [projectToDelete, setProjectToDelete] = useState(null);
     const [projectToEdit, setProjectToEdit] = useState(null); // Estado para el proyecto a editar
     const [isEditing, setIsEditing] = useState(false);
-    const docenteId = localStorage.getItem('ID_DOCENTE');
+    const docenteId = localStorage.getItem("ID_DOCENTE");
     const [image, setImage] = useState(null); // Estado para la imagen seleccionada
     const isModalOpen =
         showModal ||
@@ -30,11 +32,35 @@ const Proyectos = () => {
         showDeleteSuccessMessage ||
         showErrorMessage;
 
+        useEffect(() => {
+            const docenteId = localStorage.getItem("ID_DOCENTE");
+            const role = localStorage.getItem("ROLE");
+    
+            if (!docenteId || role !== "Docente") {
+                // Si no hay un docente logueado, redirige al login
+                navigate("/login");
+            }
+        }, [navigate]);
     // Obtener lista de proyectos al cargar el componente
     useEffect(() => {
-        fetch("http://localhost:8000/proyectos")
-            .then((response) => response.json())
-            .then((data) => setProjects(data))
+        fetch("http://localhost:8000/api/proyectos", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(
+                        "Error en la solicitud: " + response.status
+                    );
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log("Proyectos recibidos:", data); // Imprime los datos en la consola para verificar
+                setProjects(data);
+            })
             .catch((error) => console.error("Error fetching projects:", error));
     }, []);
 
@@ -48,35 +74,44 @@ const Proyectos = () => {
             return;
         }
 
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute("content");
+
         const formData = new FormData();
         formData.append("NOMBRE_PROYECTO", projectName);
         formData.append("DESCRIP_PROYECTO", projectDescription);
         formData.append("FECHA_INICIO_PROYECTO", "2024-01-01");
         formData.append("FECHA_FIN_PROYECTO", "2024-12-31");
-        formData.append("ID_DOCENTE", docenteId); // Asegúrate de tener el ID_DOCENTE disponible
+        formData.append("ID_DOCENTE", docenteId);
 
         if (image) {
             formData.append("PORTADA_PROYECTO", image);
         }
 
         if (isEditing) {
-            formData.append("_method", "PUT");
+            formData.append("_method", "PUT"); // Forzar el método PUT mediante el campo _method
         }
 
-        const csrfToken = document
-            .querySelector('meta[name="csrf-token"]')
-            .getAttribute("content");
-
         const url = isEditing
-            ? `http://localhost:8000/proyectos/${projectToEdit.ID_PROYECTO}`
-            : "http://localhost:8000/proyectos";
+            ? `http://localhost:8000/api/proyectos/${projectToEdit.ID_PROYECTO}`
+            : "http://localhost:8000/api/proyectos";
 
         fetch(url, {
-            method: "POST",
-            headers: { "X-CSRF-TOKEN": csrfToken },
+            method: "POST", // Usamos POST en lugar de PUT
+            headers: {
+                "X-CSRF-TOKEN": csrfToken,
+            },
             body: formData,
         })
-            .then((response) => response.json())
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(
+                        "Error al guardar el proyecto: " + response.statusText
+                    );
+                }
+                return response.json();
+            })
             .then((data) => {
                 const updatedProjects = isEditing
                     ? projects.map((project) =>
@@ -90,9 +125,13 @@ const Proyectos = () => {
                 setShowCreateSuccessMessage(!isEditing);
                 setShowEditSuccessMessage(isEditing);
             })
-            .catch((error) =>
-                console.error("Error al guardar el proyecto:", error)
-            );
+            .catch((error) => {
+                console.error("Error al guardar el proyecto:", error);
+                setErrorMessage(
+                    "Hubo un problema al guardar el proyecto. Intente nuevamente."
+                );
+                setShowErrorMessage(true);
+            });
     };
 
     const handleOpenEditModal = (index) => {
@@ -115,7 +154,7 @@ const Proyectos = () => {
             .querySelector('meta[name="csrf-token"]')
             .getAttribute("content");
         fetch(
-            `http://localhost:8000/proyectos/${projects[projectToDelete].ID_PROYECTO}`,
+            `http://localhost:8000/api/proyectos/${projects[projectToDelete].ID_PROYECTO}`,
             {
                 method: "DELETE",
                 headers: {

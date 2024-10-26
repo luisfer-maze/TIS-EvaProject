@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Importa Link y useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import "../../css/Login.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
@@ -8,7 +8,7 @@ function App() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const navigate = useNavigate(); // Hook para navegar programáticamente
+    const navigate = useNavigate();
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -23,34 +23,31 @@ function App() {
                 .getAttribute("content");
 
             const response = await fetch("/login", {
-                // Asegúrate de que la ruta es correcta
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken, // Incluye el token CSRF en los encabezados
+                    "X-CSRF-TOKEN": csrfToken,
                 },
-                body: JSON.stringify({
-                    email,
-                    password,
-                    role,
-                }),
+                body: JSON.stringify({ email, password, role }),
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(
-                    errorData.error || "Error en la respuesta del servidor"
-                );
+                throw new Error(errorData.error || "Error en la respuesta del servidor");
             }
 
             const data = await response.json();
             console.log("Login exitoso:", data);
 
-            // Redirige según el rol
+            // Almacena los datos de sesión en localStorage
             if (data.role === "Docente") {
+                localStorage.setItem("ID_DOCENTE", data.id);  // Guarda el ID del docente
+                localStorage.setItem("ROLE", "Docente");
                 navigate("/proyectos");
             } else if (data.role === "Estudiante") {
+                localStorage.setItem("ID_ESTUDIANTE", data.id);  // Guarda el ID del estudiante
+                localStorage.setItem("ROLE", "Estudiante");
                 navigate("/planificacion-estudiante");
             }
         } catch (error) {
@@ -62,21 +59,13 @@ function App() {
     return (
         <div
             className="app-background"
-            style={{
-                backgroundImage: `url('/assets/Background.png')`,
-            }}
+            style={{ backgroundImage: `url('/assets/Background.png')` }}
         >
             <div className="login-container">
                 <h2>Iniciar Sesión</h2>
-
-                {/* Línea divisoria */}
                 <div className="divider"></div>
                 <form onSubmit={handleLogin}>
-                    {/* Select de rol con ícono de flecha */}
-                    <div
-                        className="input-group"
-                        style={{ position: "relative" }}
-                    >
+                    <div className="input-group" style={{ position: "relative" }}>
                         <select
                             value={role}
                             onChange={(e) => setRole(e.target.value)}
@@ -87,16 +76,12 @@ function App() {
                         </select>
                         <span
                             className="toggle-select"
-                            onClick={() =>
-                                document.querySelector(".select-role").click()
-                            }
+                            onClick={() => document.querySelector(".select-role").click()}
                         >
-                            <i className="fas fa-chevron-down"></i>{" "}
-                            {/* Icono de flecha */}
+                            <i className="fas fa-chevron-down"></i>
                         </span>
                     </div>
 
-                    {/* Input de correo */}
                     <div className="input-group">
                         <input
                             type="email"
@@ -107,11 +92,7 @@ function App() {
                         />
                     </div>
 
-                    {/* Input de contraseña con ícono de ojo */}
-                    <div
-                        className="input-group"
-                        style={{ position: "relative" }}
-                    >
+                    <div className="input-group" style={{ position: "relative" }}>
                         <input
                             type={showPassword ? "text" : "password"}
                             placeholder="Contraseña:"
@@ -133,15 +114,10 @@ function App() {
                     <button type="submit">Iniciar Sesión</button>
                 </form>
 
-                {/* Enlaces a otras páginas */}
                 <div className="extra-links">
-                    <Link to="/forgot-password">
-                        ¿Has olvidado la contraseña?
-                    </Link>
+                    <Link to="/forgot-password">¿Has olvidado la contraseña?</Link>
                     <Link to="/register">¿No tienes cuenta?</Link>
                 </div>
-
-                {/* Línea divisoria */}
                 <div className="divider"></div>
                 <div className="google-login">
                     <img src="/assets/LogoGoogle.png" alt="Google logo" />
