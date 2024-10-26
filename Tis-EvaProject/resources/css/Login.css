@@ -128,8 +128,10 @@ body {
 button:not(
         .sidebar-collapse,
         .boton-eliminar,
+        .logout-button,
         .hu-modal-button,
         .boton-adjuntar,
+        .edit-profile-button,
         .btn-primary,
         .hu-edit-button,
         .forgot-password-box button,
