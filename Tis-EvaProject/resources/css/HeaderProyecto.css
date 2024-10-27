@@ -93,7 +93,7 @@
 
 .edit-profile-button {
     font-size: 14px;
-    color: #00a2d4;
+    color: #015FA9;
     font-weight: 600;
     background: none;
     border: none;
@@ -115,7 +115,7 @@
 .dropdown-divider {
     margin: auto;
     border: none;
-    border-top: 1px solid #00c8ff;
+    border-top: 1px solid #015FA9;
     width: 88%;
 }
 
@@ -141,13 +141,13 @@ ul.dropdown-options {
 }
 
 .dropdown-options li:hover {
-    color: #00a2d4;
+    color: #015FA9;
 }
 
 /* ==================== Botón de "Cerrar Sesión" ==================== */
 .logout-button {
     font-size: 14px;
-    color: #00a2d4;
+    color: #015FA9;
     font-weight: 600;
     background: none;
     border: none;

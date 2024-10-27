@@ -9,6 +9,7 @@ import ForgotPassword from './Pages/ForgotPassword';  // Importamos ForgotPasswo
 import ProyectoEstudiante from  './Pages/ProyectoEstudiante';   // Importamos ProyectoEstudiante
 import PlanificacionEstudiante from  './Pages/PlanificacionEstudiante';  // Importamos PlanificacionEstudiante
 import HistoriaUsuario from   './Pages/HistoriaUsuario';  // Importamos HistoriaUsuario
+import Perfil from "./Pages/Perfil";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/proyecto-estudiante" element={<ProyectoEstudiante />} />   {/* Nueva ruta para ProyectoEstudiante */}
         <Route path="/planificacion-estudiante" element={<PlanificacionEstudiante />} />   {/* Nueva ruta para PlanificacionEstudiante */}
         <Route path="/historia-usuario/:id" element={<HistoriaUsuario />} />
+        <Route path="/perfil" element={<Perfil />} />
       </Routes>
     </Router>
   );
