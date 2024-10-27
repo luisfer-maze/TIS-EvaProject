@@ -24,7 +24,10 @@ Route::prefix('api')->middleware(['auth:docente'])->group(function () {
 
 Route::post('/api/usuario-logueado/update', [AuthController::class, 'updateProfile'])
     ->middleware('auth:docente,estudiante');
-    
+
+Route::post('/api/usuario-logueado/change-password', [AuthController::class, 'changePassword'])
+    ->middleware('auth:docente,estudiante');
+
 // Ruta de prueba para verificar funcionamiento del backend
 Route::get('/test', function () {
     return 'Ruta de prueba funcionando';

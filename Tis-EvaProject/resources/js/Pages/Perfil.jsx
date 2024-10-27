@@ -20,7 +20,13 @@ const Perfil = () => {
         newPassword: "",
         confirmNewPassword: "",
     });
-
+    const [showEditSuccessMessage, setShowEditSuccessMessage] = useState(false);
+    const [
+        showPasswordChangeSuccessMessage,
+        setShowPasswordChangeSuccessMessage,
+    ] = useState(false);
+    const [errorMessage, setErrorMessage] = useState({}); // Estado para mensajes de error
+    const [currentPasswordError, setCurrentPasswordError] = useState("");
     // Cargar datos del usuario
     useEffect(() => {
         fetch("http://localhost:8000/api/usuario-logueado", {
@@ -102,16 +108,102 @@ const Perfil = () => {
             })
             .then((data) => {
                 console.log("Perfil actualizado con éxito:", data);
-                // Actualiza los datos del usuario después de guardar
-                setUserData((prevState) => ({
-                    ...prevState,
-                    nombre: data.nombre || prevState.nombre,
-                    apellido: data.apellido || prevState.apellido,
-                    foto: data.foto || prevState.foto,
-                }));
+                setShowEditSuccessMessage(true); // Mostrar mensaje de éxito
+                setTimeout(() => setShowEditSuccessMessage(false), 3000); // Ocultar después de 3 segundos
             })
             .catch((error) =>
                 console.error("Error al actualizar el perfil:", error)
+            );
+    };
+
+    // Manejar cambios en los campos de contraseña
+    // Manejar cambios en los campos de contraseña
+    const handlePasswordChange = (e) => {
+        setPasswordData({
+            ...passwordData,
+            [e.target.name]: e.target.value,
+        });
+    };
+
+    // Enviar datos para cambiar la contraseña
+    const handleChangePassword = () => {
+        setErrorMessage({});
+        setCurrentPasswordError(""); // Reset error messages
+
+        // Expresión regular para la validación de contraseña segura
+        const passwordRegex =
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        // Validar si las contraseñas coinciden
+        if (passwordData.newPassword !== passwordData.confirmNewPassword) {
+            setErrorMessage({
+                confirmNewPassword: "Las contraseñas no coinciden.",
+            });
+            return;
+        }
+
+        // Validar si la nueva contraseña cumple con los requisitos de seguridad
+        if (!passwordRegex.test(passwordData.newPassword)) {
+            setErrorMessage({
+                newPassword:
+                    "La nueva contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y símbolos.",
+            });
+            return;
+        }
+
+        // Enviar la solicitud al backend si las validaciones pasan
+        fetch("http://localhost:8000/api/usuario-logueado/change-password", {
+            method: "POST",
+            body: JSON.stringify({
+                currentPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword,
+                newPassword_confirmation: passwordData.confirmNewPassword,
+            }),
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document
+                    .querySelector('meta[name="csrf-token"]')
+                    .getAttribute("content"),
+            },
+            credentials: "include",
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then((data) => {
+                        console.log("Error response data:", data); // Para depuración
+                        if (
+                            data.error === "La contraseña actual es incorrecta"
+                        ) {
+                            setCurrentPasswordError(
+                                "La contraseña actual es incorrecta"
+                            );
+                        } else {
+                            setCurrentPasswordError(
+                                "Ocurrió un error al cambiar la contraseña"
+                            );
+                        }
+                        throw new Error(data.error || "Error desconocido");
+                    });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                if (data.message) {
+                    setShowPasswordChangeSuccessMessage(true);
+                    setTimeout(
+                        () => setShowPasswordChangeSuccessMessage(false),
+                        3000
+                    );
+                    setPasswordData({
+                        currentPassword: "",
+                        newPassword: "",
+                        confirmNewPassword: "",
+                    });
+                    setCurrentPasswordError(""); // Limpiar mensaje de error en caso de éxito
+                }
+            })
+            .catch((error) =>
+                console.error("Error al cambiar la contraseña:", error)
             );
     };
 
@@ -150,7 +242,7 @@ const Perfil = () => {
                             onChange={handleChange}
                         />
 
-                        <label>Apellido</label>
+                        <label>Apellidos</label>
                         <input
                             type="text"
                             name="apellido"
@@ -187,21 +279,48 @@ const Perfil = () => {
             return (
                 <div className="perfil-form">
                     <label>Contraseña actual</label>
-                    <input type="password" placeholder="Tu contraseña actual" />
+                    <input
+                        type="password"
+                        name="currentPassword"
+                        value={passwordData.currentPassword}
+                        onChange={handlePasswordChange}
+                        placeholder="Tu contraseña actual"
+                    />
+                    {currentPasswordError && (
+                        <p className="error-message">{currentPasswordError}</p>
+                    )}
 
                     <label>Nueva contraseña</label>
                     <input
                         type="password"
+                        name="newPassword"
+                        value={passwordData.newPassword}
+                        onChange={handlePasswordChange}
                         placeholder="Escribe una contraseña nueva"
                     />
+                    {errorMessage.newPassword && (
+                        <p className="error-message">
+                            {errorMessage.newPassword}
+                        </p>
+                    )}
 
                     <label>Reescribe la nueva contraseña</label>
                     <input
                         type="password"
+                        name="confirmNewPassword"
+                        value={passwordData.confirmNewPassword}
+                        onChange={handlePasswordChange}
                         placeholder="Reescribe la nueva contraseña"
                     />
+                    {errorMessage.confirmNewPassword && (
+                        <p className="error-message">
+                            {errorMessage.confirmNewPassword}
+                        </p>
+                    )}
 
-                    <button className="save-btn">Guardar</button>
+                    <button className="save-btn" onClick={handleChangePassword}>
+                        Guardar
+                    </button>
                 </div>
             );
         }
@@ -210,6 +329,43 @@ const Perfil = () => {
     return (
         <div className="perfil-container">
             <HeaderProyecto isModalOpen={isModalOpen} />
+            {showEditSuccessMessage && (
+                <div className="success-modal">
+                    <div className="success-modal-content">
+                        <h3>Mensaje</h3>
+                        <div className="success-message">
+                            <i className="fas fa-check-circle"></i>
+                            <p>¡Se guardaron los cambios exitosamente!</p>
+                        </div>
+                        <button
+                            onClick={() => setShowEditSuccessMessage(false)}
+                            className="create-btn"
+                        >
+                            Aceptar
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {showPasswordChangeSuccessMessage && (
+                <div className="success-modal">
+                    <div className="success-modal-content">
+                        <h3>Mensaje</h3>
+                        <div className="success-message">
+                            <i className="fas fa-check-circle"></i>
+                            <p>¡Contraseña cambiada exitosamente!</p>
+                        </div>
+                        <button
+                            onClick={() =>
+                                setShowPasswordChangeSuccessMessage(false)
+                            }
+                            className="create-btn"
+                        >
+                            Aceptar
+                        </button>
+                    </div>
+                </div>
+            )}
             <div className="perfil-content">
                 <aside className="perfil-sidebar">
                     <ul>

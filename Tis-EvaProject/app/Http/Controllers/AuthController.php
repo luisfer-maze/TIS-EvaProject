@@ -8,6 +8,7 @@ use App\Models\Estudiante;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -147,4 +148,50 @@ class AuthController extends Controller
             return response()->json(['error' => 'Ocurrió un error al actualizar el perfil.'], 500);
         }
     }
+    public function changePassword(Request $request)
+{
+    try {
+        $user = null;
+        $passwordField = '';
+
+        if (Auth::guard('docente')->check()) {
+            /** @var \App\Models\Docente $user */
+            $user = Auth::guard('docente')->user();
+            $passwordField = 'PASSWORD_DOCENTE';
+        } elseif (Auth::guard('estudiante')->check()) {
+            /** @var \App\Models\Estudiante $user */
+            $user = Auth::guard('estudiante')->user();
+            $passwordField = 'PASSWORD_EST';
+        } else {
+            return response()->json(['error' => 'No autenticado'], 401);
+        }
+
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
+
+        // Validar los datos de la solicitud
+        $request->validate([
+            'currentPassword' => 'required',
+            'newPassword' => 'required|min:6|confirmed'
+        ]);
+
+        // Verificar que la contraseña actual sea correcta
+        if (!Hash::check($request->input('currentPassword'), $user->{$passwordField})) {
+            Log::info("Contraseña incorrecta detectada"); // Log para confirmar el flujo
+            return response()->json(['error' => 'La contraseña actual es incorrecta'], 400);
+        }
+        
+
+        // Actualizar la contraseña
+        $user->{$passwordField} = Hash::make($request->input('newPassword'));
+        $user->save();
+
+        return response()->json(['message' => 'Contraseña actualizada con éxito']);
+    } catch (\Exception $e) {
+        Log::error('Error al cambiar la contraseña: ' . $e->getMessage());
+        return response()->json(['error' => 'Ocurrió un error al cambiar la contraseña'], 500);
+    }
+}
+
 }

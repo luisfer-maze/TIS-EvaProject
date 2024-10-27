@@ -217,3 +217,14 @@
     background-color: #051B32;
     color: #ffffff;
 }
+
+.error-message {
+    color: red;
+    font-size: 0.85em;
+    margin-top: -5px;
+    margin-bottom: 10px;
+    text-align: left;
+    margin-left: 0; /* Asegura que esté alineado al borde izquierdo */
+    display: block; /* Asegura que ocupe todo el ancho */
+    width: 100%; /* Ajusta el ancho al campo de entrada */
+}
