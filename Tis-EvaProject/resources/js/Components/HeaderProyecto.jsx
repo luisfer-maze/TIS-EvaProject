@@ -23,7 +23,7 @@ const HeaderProyecto = ({ isModalOpen }) => {
                     setUserData({
                         nombre: `${data.nombre} ${data.apellido}`,
                         email: data.email,
-                        foto: data.foto,
+                        foto: data.foto ? `http://localhost:8000/storage/${data.foto}` : "https://via.placeholder.com/50",
                     });
                 }
             })

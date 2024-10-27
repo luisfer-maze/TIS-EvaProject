@@ -4,15 +4,24 @@ import "../../css/Perfil.css";
 
 const Perfil = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedOption, setSelectedOption] = useState("configuracion-usuario"); // Estado de la opción seleccionada
-
+    const [selectedOption, setSelectedOption] = useState(
+        "configuracion-usuario"
+    );
     const [userData, setUserData] = useState({
-        nombre: "Usuario",
-        email: "usuario@correo.com",
+        nombre: "",
+        apellido: "",
+        email: "",
         foto: "https://via.placeholder.com/100",
         bio: "",
     });
+    const [newPhoto, setNewPhoto] = useState(null);
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: "",
+        newPassword: "",
+        confirmNewPassword: "",
+    });
 
+    // Cargar datos del usuario
     useEffect(() => {
         fetch("http://localhost:8000/api/usuario-logueado", {
             credentials: "include",
@@ -21,9 +30,12 @@ const Perfil = () => {
             .then((data) => {
                 if (!data.error) {
                     setUserData({
-                        nombre: `${data.nombre} ${data.apellido}`,
-                        email: data.email,
-                        foto: data.foto || "https://via.placeholder.com/100",
+                        nombre: data.nombre || "",
+                        apellido: data.apellido || "",
+                        email: data.email || "",
+                        foto: data.foto
+                            ? `http://localhost:8000/storage/${data.foto}`
+                            : "https://via.placeholder.com/100",
                         bio: data.bio || "",
                     });
                 }
@@ -33,7 +45,77 @@ const Perfil = () => {
             );
     }, []);
 
-    // Función para renderizar el contenido en función de la opción seleccionada
+    // Manejar cambios en los campos de texto
+    const handleChange = (e) => {
+        setUserData({
+            ...userData,
+            [e.target.name]: e.target.value,
+        });
+    };
+
+    // Manejar carga de nueva imagen
+    const handlePhotoChange = (e) => {
+        const file = e.target.files[0];
+        setNewPhoto(file);
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setUserData((prevState) => ({
+                    ...prevState,
+                    foto: reader.result,
+                }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // Guardar cambios en el backend
+    const handleSaveChanges = () => {
+        const formData = new FormData();
+        formData.append("nombre", userData.nombre);
+        formData.append("apellido", userData.apellido);
+        formData.append("email", userData.email);
+        if (newPhoto) {
+            formData.append("foto", newPhoto);
+        }
+
+        fetch("http://localhost:8000/api/usuario-logueado/update", {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+            headers: {
+                "X-CSRF-TOKEN": document
+                    .querySelector('meta[name="csrf-token"]')
+                    .getAttribute("content"),
+            },
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    console.error(
+                        "Error en la respuesta del servidor:",
+                        response
+                    );
+                    throw new Error("Respuesta del servidor no válida");
+                }
+            })
+            .then((data) => {
+                console.log("Perfil actualizado con éxito:", data);
+                // Actualiza los datos del usuario después de guardar
+                setUserData((prevState) => ({
+                    ...prevState,
+                    nombre: data.nombre || prevState.nombre,
+                    apellido: data.apellido || prevState.apellido,
+                    foto: data.foto || prevState.foto,
+                }));
+            })
+            .catch((error) =>
+                console.error("Error al actualizar el perfil:", error)
+            );
+    };
+
+    // Renderizar contenido en función de la opción seleccionada
     const renderContent = () => {
         if (selectedOption === "configuracion-usuario") {
             return (
@@ -44,30 +126,60 @@ const Perfil = () => {
                             alt="Foto de perfil"
                             className="perfil-foto"
                         />
-                        <button className="change-photo-btn">
+                        <input
+                            type="file"
+                            id="fileInput"
+                            style={{ display: "none" }}
+                            onChange={handlePhotoChange}
+                        />
+                        <button
+                            className="change-photo-btn"
+                            onClick={() =>
+                                document.getElementById("fileInput").click()
+                            }
+                        >
                             Cambiar Foto
                         </button>
                     </div>
                     <div className="perfil-form">
-                        <label>Nombre completo</label>
-                        <input type="text" value={userData.nombre} disabled />
+                        <label>Nombre</label>
+                        <input
+                            type="text"
+                            name="nombre"
+                            value={userData.nombre}
+                            onChange={handleChange}
+                        />
+
+                        <label>Apellido</label>
+                        <input
+                            type="text"
+                            name="apellido"
+                            value={userData.apellido}
+                            onChange={handleChange}
+                        />
 
                         <label>Email</label>
-                        <input type="email" value={userData.email} disabled />
+                        <input
+                            type="email"
+                            name="email"
+                            value={userData.email}
+                            onChange={handleChange}
+                        />
 
                         <label>Biografía (máx. 210 caracteres)</label>
                         <textarea
+                            name="bio"
                             value={userData.bio}
                             maxLength="210"
                             placeholder="Cuéntanos algo sobre ti..."
-                            onChange={(e) =>
-                                setUserData({
-                                    ...userData,
-                                    bio: e.target.value,
-                                })
-                            }
+                            onChange={handleChange}
                         ></textarea>
-                        <button className="save-btn">Guardar</button>
+                        <button
+                            className="save-btn"
+                            onClick={handleSaveChanges}
+                        >
+                            Guardar
+                        </button>
                     </div>
                 </div>
             );
@@ -75,10 +187,7 @@ const Perfil = () => {
             return (
                 <div className="perfil-form">
                     <label>Contraseña actual</label>
-                    <input
-                        type="password"
-                        placeholder="Tu contraseña actual"
-                    />
+                    <input type="password" placeholder="Tu contraseña actual" />
 
                     <label>Nueva contraseña</label>
                     <input
