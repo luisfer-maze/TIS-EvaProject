@@ -23,7 +23,7 @@
 /* Sidebar Styles */
 /* Estilos generales del sidebar */
 .perfil-sidebar {
-    width: 250px !important;
+    width: 250px;
     background-color: #f9f9fb;
     font-family: Arial, sans-serif;
     height: 100%;
@@ -130,7 +130,7 @@
     border: none;
     cursor: pointer;
     font-size: 14px;
-    font-weight: bold;
+    text-transform: uppercase;
     padding: 8px 20px;
     border-radius: 4px;
     transition: background-color 0.3s ease, color 0.3s ease; /* Transición suave */
@@ -192,29 +192,45 @@
 .perfil-form input:disabled {
     background-color: #f8f9fa;
 }
-
+/* Cambiar el color del borde cuando el campo está enfocado */
+.perfil-form input:focus,
+.perfil-form textarea:focus,
+.perfil-form select:focus {
+    border-color: #015FA9; /* Cambia #007bff por el color que prefieras */
+    outline: none; /* Remueve el borde de enfoque predeterminado */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Agrega un pequeño brillo */
+}
 .perfil-form textarea {
     resize: none;
     height: 80px;
 }
 
+/* Asegura que el contenedor del botón tenga flexbox y esté centrado */
+.save-btn-container {
+    display: flex;
+    justify-content: center; /* Centra el botón horizontalmente */
+}
+
+/* Aplica al botón el estilo anterior */
 .save-btn {
     background-color: #015FA9;
     color: #ffffff;
     border: none;
     padding: 10px 20px;
     font-size: 14px;
-    font-weight: bold;
     border-radius: 4px;
     cursor: pointer;
-    margin-top: 10px;
-    align-self: flex-start; /* Alinea a la izquierda */
-    width: 100%; /* Ajusta para que el botón ocupe todo el ancho del formulario */
-    max-width: 100px; /* Opcional: limita el ancho máximo del botón */
+    text-transform: uppercase;
+    width: 100%; /* Para que ocupe todo el ancho disponible */
+    max-width: 100px; /* Limita el ancho máximo del botón */
+    text-align: center; /* Asegura que el texto esté centrado dentro del botón */
+    display: flex; /* Habilita flexbox */
+    justify-content: center; /* Centra el texto horizontalmente */
+    align-items: center; /* Centra el texto verticalmente */
 }
 
 .save-btn:hover {
-    background-color: #051B32;
+    background-color: #002A4C;
     color: #ffffff;
 }
 
