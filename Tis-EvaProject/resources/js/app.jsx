@@ -10,6 +10,8 @@ import ProyectoEstudiante from  './Pages/ProyectoEstudiante';   // Importamos Pr
 import PlanificacionEstudiante from  './Pages/PlanificacionEstudiante';  // Importamos PlanificacionEstudiante
 import HistoriaUsuario from   './Pages/HistoriaUsuario';  // Importamos HistoriaUsuario
 import Perfil from "./Pages/Perfil";
+import AddGrupo from './Pages/Grupos';
+import Grupos from './Pages/Grupos';
 
 function App() {
   return (
@@ -18,6 +20,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/proyectos" element={<Proyectos />} />
+        <Route path="/grupo" element={<Grupos />} />
         <Route path="/register" element={<Register />} />  {/* Nueva ruta para Register */}
         <Route path="/forgot-password" element={<ForgotPassword />} />  {/* Nueva ruta para Forgot Password */}
         <Route path="/proyecto-estudiante" element={<ProyectoEstudiante />} />   {/* Nueva ruta para ProyectoEstudiante */}
