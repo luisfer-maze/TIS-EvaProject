@@ -1,52 +1,57 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProyectoController;
+use App\Http\Controllers\ProyectosController;
+use App\Http\Controllers\AuthController;
+use App\Http\Middleware\CheckAdmin;
 
-Route::get('/', function () {
-    return view('welcome');  // Esto cargará el componente de React según la ruta
-});
-
+// Ruta ficticia de login para evitar error de redirección
 Route::get('/login', function () {
-    return view('welcome');  // Renderiza el componente Login en React
+    return view('welcome'); // Carga tu aplicación React
+})->name('login');
+
+// Rutas de autenticación
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout']);
+Route::get('/api/usuario-logueado', [AuthController::class, 'getLoggedUser']);
+
+// Rutas de la API para proyectos, con autenticación para docentes
+Route::prefix('api')->middleware(['auth:docente'])->group(function () {
+    Route::get('/proyectos', [ProyectosController::class, 'index']);
+    Route::post('/proyectos', [ProyectosController::class, 'store']);
+    Route::put('/proyectos/{id}', [ProyectosController::class, 'update']);
+    Route::delete('/proyectos/{id}', [ProyectosController::class, 'destroy']);
 });
 
-Route::get('/proyecto', function () {
-    return view('welcome');  // Renderiza el componente Proyecto en React
-});
+// Rutas protegidas por autenticación de docente y estudiante para actualizar perfil y cambiar contraseña
+Route::post('/api/usuario-logueado/update', [AuthController::class, 'updateProfile'])
+    ->middleware('auth:docente,estudiante');
 
-Route::get('/proyecto-estudiante', function () {
-    return view('welcome');  // Renderiza el componente Proyecto en React
-});
+Route::post('/api/usuario-logueado/change-password', [AuthController::class, 'changePassword'])
+    ->middleware('auth:docente,estudiante');
 
-Route::get('/planificacion-estudiante', function () {
-    return view('welcome');  // Renderiza el componente Proyecto en React
-});
-
-Route::get('/historia-usuario', function () {
-    return view('welcome');  // Renderiza el componente Proyecto en React
-});
-
-Route::get('/homepage', function () {
-    return view('welcome');  // Renderiza el componente HomePage en React
-});
-
-Route::get('/register', function () {
-    return view('welcome');  // Renderiza el componente HomePage en React
-});
-
-Route::get('/forgot-password', function () {
-    return view('welcome');  // Renderiza el componente HomePage en React
-});
-
-Route::get('/proyectos', [ProyectoController::class, 'index']);
-Route::post('/proyectos', [ProyectoController::class, 'store']);
-Route::get('/proyectos/{id}', [ProyectoController::class, 'show']);
-Route::put('/proyectos/{id}', [ProyectoController::class, 'update']);
-Route::delete('/proyectos/{id}', [ProyectoController::class, 'destroy']);
-
+// Ruta de prueba para verificar funcionamiento del backend
 Route::get('/test', function () {
     return 'Ruta de prueba funcionando';
 });
 
-Route::get('/test-controller', [ProyectoController::class, 'index']);
+// Ruta de prueba para verificar el controlador de proyectos
+Route::get('/test-controller', [ProyectosController::class, 'index']);
+
+// Rutas protegidas por middleware de administrador
+Route::middleware(['auth:docente', CheckAdmin::class])->group(function () {
+    Route::get('/ruta-admin', function () {
+        return response()->json(['message' => 'Acceso concedido. Usuario es administrador.']);
+    });
+    // Otras rutas de administración aquí
+});
+Route::middleware(['auth:docente', CheckAdmin::class])->get('/api/pending-users', [AuthController::class, 'getPendingUsers']);
+Route::middleware(['auth:docente', CheckAdmin::class])->post('/api/approve-user/{id}', [AuthController::class, 'approveUser']);
+
+// Ruta para el registro de usuarios
+Route::post('/api/register', [AuthController::class, 'register']);
+
+// Ruta comodín para manejar todas las rutas frontend con React
+Route::get('/{any}', function () {
+    return view('welcome');  // Carga la vista de React
+})->where('any', '.*');
