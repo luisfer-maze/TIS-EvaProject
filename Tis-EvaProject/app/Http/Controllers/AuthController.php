@@ -26,14 +26,23 @@ class AuthController extends Controller
 
         if ($role == 'Docente') {
             if (Auth::guard('docente')->attempt(['EMAIL_DOCENTE' => $credentials['email'], 'password' => $credentials['password']])) {
-                // Inicio de sesión exitoso para docente
-                return response()->json(['role' => 'Docente', 'message' => 'Login exitoso']);
+                $user = Auth::guard('docente')->user();
+
+                if (!$user->approved) {
+                    Auth::guard('docente')->logout();
+                    return response()->json(['error' => 'Tu cuenta está pendiente de aprobación.'], 403);
+                }
+
+                if ($user->is_admin) {
+                    return response()->json(['role' => 'Docente', 'is_admin' => true, 'message' => 'Login exitoso como administrador']);
+                } else {
+                    return response()->json(['role' => 'Docente', 'is_admin' => false, 'message' => 'Login exitoso']);
+                }
             } else {
                 return response()->json(['error' => 'Credenciales inválidas'], 401);
             }
         } elseif ($role == 'Estudiante') {
             if (Auth::guard('estudiante')->attempt(['EMAIL_EST' => $credentials['email'], 'password' => $credentials['password']])) {
-                // Inicio de sesión exitoso para estudiante
                 return response()->json(['role' => 'Estudiante', 'message' => 'Login exitoso']);
             } else {
                 return response()->json(['error' => 'Credenciales inválidas'], 401);
@@ -42,6 +51,25 @@ class AuthController extends Controller
 
         return response()->json(['error' => 'El rol no es válido'], 400);
     }
+
+    public function approveUser($id)
+{
+    if (!Auth::guard('docente')->check() || !Auth::guard('docente')->user()->is_admin) {
+        return response()->json(['error' => 'No autorizado'], 403);
+    }
+
+    $user = Docente::find($id);
+    if (!$user) {
+        return response()->json(['error' => 'Usuario no encontrado'], 404);
+    }
+
+    $user->approved = true;
+    $user->save();
+
+    return response()->json(['message' => 'Usuario aprobado exitosamente']);
+}
+
+
 
     public function logout(Request $request)
     {
@@ -64,7 +92,8 @@ class AuthController extends Controller
                 'nombre' => $user->NOMBRE_DOCENTE,
                 'apellido' => $user->APELLIDO_DOCENTE,
                 'email' => $user->EMAIL_DOCENTE,
-                'foto' => $user->FOTO_DOCENTE ?? 'https://via.placeholder.com/50'
+                'foto' => $user->FOTO_DOCENTE ?? 'https://via.placeholder.com/50',
+                'is_admin' => $user->is_admin // Asegúrate de incluir este campo
             ]);
         } elseif (Auth::guard('estudiante')->check()) {
             $user = Auth::guard('estudiante')->user();
@@ -149,49 +178,87 @@ class AuthController extends Controller
         }
     }
     public function changePassword(Request $request)
-{
-    try {
-        $user = null;
-        $passwordField = '';
+    {
+        try {
+            $user = null;
+            $passwordField = '';
 
-        if (Auth::guard('docente')->check()) {
-            /** @var \App\Models\Docente $user */
-            $user = Auth::guard('docente')->user();
-            $passwordField = 'PASSWORD_DOCENTE';
-        } elseif (Auth::guard('estudiante')->check()) {
-            /** @var \App\Models\Estudiante $user */
-            $user = Auth::guard('estudiante')->user();
-            $passwordField = 'PASSWORD_EST';
-        } else {
-            return response()->json(['error' => 'No autenticado'], 401);
+            if (Auth::guard('docente')->check()) {
+                /** @var \App\Models\Docente $user */
+                $user = Auth::guard('docente')->user();
+                $passwordField = 'PASSWORD_DOCENTE';
+            } elseif (Auth::guard('estudiante')->check()) {
+                /** @var \App\Models\Estudiante $user */
+                $user = Auth::guard('estudiante')->user();
+                $passwordField = 'PASSWORD_EST';
+            } else {
+                return response()->json(['error' => 'No autenticado'], 401);
+            }
+
+            if (!$user) {
+                return response()->json(['error' => 'Usuario no encontrado'], 404);
+            }
+
+            // Validar los datos de la solicitud
+            $request->validate([
+                'currentPassword' => 'required',
+                'newPassword' => 'required|min:6|confirmed'
+            ]);
+
+            // Verificar que la contraseña actual sea correcta
+            if (!Hash::check($request->input('currentPassword'), $user->{$passwordField})) {
+                Log::info("Contraseña incorrecta detectada"); // Log para confirmar el flujo
+                return response()->json(['error' => 'La contraseña actual es incorrecta'], 400);
+            }
+
+
+            // Actualizar la contraseña
+            $user->{$passwordField} = Hash::make($request->input('newPassword'));
+            $user->save();
+
+            return response()->json(['message' => 'Contraseña actualizada con éxito']);
+        } catch (\Exception $e) {
+            Log::error('Error al cambiar la contraseña: ' . $e->getMessage());
+            return response()->json(['error' => 'Ocurrió un error al cambiar la contraseña'], 500);
         }
+    }
+    // En AuthController.php
 
-        if (!$user) {
-            return response()->json(['error' => 'Usuario no encontrado'], 404);
-        }
-
-        // Validar los datos de la solicitud
+    public function register(Request $request)
+    {
         $request->validate([
-            'currentPassword' => 'required',
-            'newPassword' => 'required|min:6|confirmed'
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'email' => 'required|email|unique:docente,EMAIL_DOCENTE',
+            'password' => 'required|string|min:8|confirmed',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Verificar que la contraseña actual sea correcta
-        if (!Hash::check($request->input('currentPassword'), $user->{$passwordField})) {
-            Log::info("Contraseña incorrecta detectada"); // Log para confirmar el flujo
-            return response()->json(['error' => 'La contraseña actual es incorrecta'], 400);
+        $imagePath = null;
+        if ($request->hasFile('foto')) {
+            $imagePath = $request->file('foto')->store('profile_photos', 'public');
         }
-        
 
-        // Actualizar la contraseña
-        $user->{$passwordField} = Hash::make($request->input('newPassword'));
-        $user->save();
+        $user = Docente::create([
+            'NOMBRE_DOCENTE' => $request->input('nombre'),
+            'APELLIDO_DOCENTE' => $request->input('apellido'),
+            'EMAIL_DOCENTE' => $request->input('email'),
+            'PASSWORD_DOCENTE' => Hash::make($request->input('password')),
+            'FOTO_DOCENTE' => $imagePath,
+            'is_admin' => 0,
+            'approved' => false, // Set the default approval status to false
+        ]);
 
-        return response()->json(['message' => 'Contraseña actualizada con éxito']);
-    } catch (\Exception $e) {
-        Log::error('Error al cambiar la contraseña: ' . $e->getMessage());
-        return response()->json(['error' => 'Ocurrió un error al cambiar la contraseña'], 500);
+        return response()->json(['message' => 'Registro exitoso. Espera la aprobación del administrador.', 'user' => $user]);
     }
+    public function getPendingUsers()
+{
+    if (!Auth::guard('docente')->check() || !Auth::guard('docente')->user()->is_admin) {
+        return response()->json(['error' => 'No autorizado'], 403);
+    }
+
+    $pendingUsers = Docente::where('approved', false)->get();
+    return response()->json($pendingUsers);
 }
 
 }

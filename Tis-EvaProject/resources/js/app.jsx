@@ -10,6 +10,7 @@ import ProyectoEstudiante from  './Pages/ProyectoEstudiante';   // Importamos Pr
 import PlanificacionEstudiante from  './Pages/PlanificacionEstudiante';  // Importamos PlanificacionEstudiante
 import HistoriaUsuario from   './Pages/HistoriaUsuario';  // Importamos HistoriaUsuario
 import Perfil from "./Pages/Perfil";
+import ApproveAccounts from './Pages/ApproveAccounts';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/planificacion-estudiante" element={<PlanificacionEstudiante />} />   {/* Nueva ruta para PlanificacionEstudiante */}
         <Route path="/historia-usuario/:id" element={<HistoriaUsuario />} />
         <Route path="/perfil" element={<Perfil />} />
+        <Route path="/approve-accounts" element={<ApproveAccounts />} />
       </Routes>
     </Router>
   );

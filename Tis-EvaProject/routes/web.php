@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProyectosController;
 use App\Http\Controllers\AuthController;
+use App\Http\Middleware\CheckAdmin;
 
 // Ruta ficticia de login para evitar error de redirección
 Route::get('/login', function () {
@@ -22,6 +23,7 @@ Route::prefix('api')->middleware(['auth:docente'])->group(function () {
     Route::delete('/proyectos/{id}', [ProyectosController::class, 'destroy']);
 });
 
+// Rutas protegidas por autenticación de docente y estudiante para actualizar perfil y cambiar contraseña
 Route::post('/api/usuario-logueado/update', [AuthController::class, 'updateProfile'])
     ->middleware('auth:docente,estudiante');
 
@@ -35,6 +37,19 @@ Route::get('/test', function () {
 
 // Ruta de prueba para verificar el controlador de proyectos
 Route::get('/test-controller', [ProyectosController::class, 'index']);
+
+// Rutas protegidas por middleware de administrador
+Route::middleware(['auth:docente', CheckAdmin::class])->group(function () {
+    Route::get('/ruta-admin', function () {
+        return response()->json(['message' => 'Acceso concedido. Usuario es administrador.']);
+    });
+    // Otras rutas de administración aquí
+});
+Route::middleware(['auth:docente', CheckAdmin::class])->get('/api/pending-users', [AuthController::class, 'getPendingUsers']);
+Route::middleware(['auth:docente', CheckAdmin::class])->post('/api/approve-user/{id}', [AuthController::class, 'approveUser']);
+
+// Ruta para el registro de usuarios
+Route::post('/api/register', [AuthController::class, 'register']);
 
 // Ruta comodín para manejar todas las rutas frontend con React
 Route::get('/{any}', function () {
