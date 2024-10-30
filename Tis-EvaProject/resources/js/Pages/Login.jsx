@@ -40,6 +40,11 @@ function App() {
             const data = await response.json();
             console.log("Login exitoso:", data);
 
+            // Almacena el token en localStorage
+            if (data.token) {
+                localStorage.setItem("token", data.token); // Guarda el token
+            }
+
             // Almacena los datos de sesión en localStorage
             if (data.role === "Docente") {
                 localStorage.setItem("ID_DOCENTE", data.id);  // Guarda el ID del docente

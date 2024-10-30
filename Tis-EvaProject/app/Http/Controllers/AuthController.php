@@ -260,5 +260,41 @@ class AuthController extends Controller
     $pendingUsers = Docente::where('approved', false)->get();
     return response()->json($pendingUsers);
 }
+public function getAllUsers()
+{
+    if (!Auth::guard('docente')->check() || !Auth::guard('docente')->user()->is_admin) {
+        return response()->json(['error' => 'No autorizado'], 403);
+    }
+
+    $docentes = Docente::where('is_admin', false)->where('approved', true)->get();
+    return response()->json($docentes);
+}
+
+
+public function assignAdmin($id)
+{
+    Log::info('Iniciando assignAdmin con ID: ' . $id);
+
+    // Verificar autenticación y permisos de administrador
+    if (!Auth::guard('docente')->check() || !Auth::guard('docente')->user()->is_admin) {
+        Log::error('Usuario no autorizado o no es administrador');
+        return response()->json(['error' => 'No autorizado'], 403);
+    }
+
+    // Buscar al usuario docente
+    $usuario = Docente::find($id);
+    if (!$usuario) {
+        Log::error('Docente no encontrado con ID: ' . $id);
+        return response()->json(['error' => 'Docente no encontrado'], 404);
+    }
+
+    // Asignar permisos de administrador
+    $usuario->is_admin = true;
+    $usuario->save();
+
+    Log::info('Permisos de administrador asignados al docente con ID: ' . $id);
+    return response()->json(['message' => 'Permisos de administrador asignados exitosamente']);
+}
+
 
 }
