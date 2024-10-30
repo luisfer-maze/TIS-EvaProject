@@ -121,7 +121,7 @@ function App() {
 
                 <div className="extra-links">
                     <Link to="/forgot-password">¿Has olvidado la contraseña?</Link>
-                    <Link to="/register">¿No tienes cuenta?</Link>
+                    <Link to="/register">¿No tienes cuenta? Registrate</Link>
                 </div>
                 <div className="divider"></div>
                 <div className="google-login">
