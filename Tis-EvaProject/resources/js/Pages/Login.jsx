@@ -16,13 +16,16 @@ function App() {
 
     const handleLogin = async (event) => {
         event.preventDefault();
+    
+        console.log("Datos enviados:", { email, password, role });
+    
         try {
-            // Obtener el token CSRF desde el meta tag
-            const csrfToken = document
-                .querySelector('meta[name="csrf-token"]')
-                .getAttribute("content");
-
-            const response = await fetch("/login", {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+    
+            // Define la URL según el rol seleccionado
+            const loginUrl = role === "Docente" ? "/docente/login" : "/estudiante/login";
+    
+            const response = await fetch(loginUrl, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -31,36 +34,34 @@ function App() {
                 },
                 body: JSON.stringify({ email, password, role }),
             });
-
+    
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || "Error en la respuesta del servidor");
             }
-
+    
             const data = await response.json();
             console.log("Login exitoso:", data);
-
-            // Almacena el token en localStorage
+    
             if (data.token) {
-                localStorage.setItem("token", data.token); // Guarda el token
+                localStorage.setItem("token", data.token);
             }
-
-            // Almacena los datos de sesión en localStorage
+    
             if (data.role === "Docente") {
-                localStorage.setItem("ID_DOCENTE", data.id);  // Guarda el ID del docente
+                localStorage.setItem("ID_DOCENTE", data.id);
                 localStorage.setItem("ROLE", "Docente");
                 navigate("/proyectos");
             } else if (data.role === "Estudiante") {
-                localStorage.setItem("ID_ESTUDIANTE", data.id);  // Guarda el ID del estudiante
+                localStorage.setItem("ID_ESTUDIANTE", data.id);
                 localStorage.setItem("ROLE", "Estudiante");
                 navigate("/planificacion-estudiante");
             }
         } catch (error) {
             console.error("Error:", error.message);
-            // Aquí puedes manejar el error y mostrar un mensaje al usuario
         }
     };
-
+    
+    
     return (
         <div
             className="app-background"

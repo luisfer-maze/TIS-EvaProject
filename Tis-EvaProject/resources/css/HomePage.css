@@ -120,7 +120,7 @@ body {
 
 .btn-primary {
   background-color: #015FA9;
-  width: 7vw;
+  border: none; /* Elimina el borde por defecto */
   border-radius: 0.5vw;
   color: white;
   padding: 1.2vh 2.4vw;
@@ -132,10 +132,22 @@ body {
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  box-shadow: none; /* Elimina cualquier sombra */
 }
 
 .btn-primary:hover {
   background-color: #01457c;
+}
+
+/* Estilos específicos para el botón de "Cerrar sesión" */
+.btn-primary.logout {
+  background-color: #d9534f;
+  border: none;
+  box-shadow: none;
+}
+
+.btn-primary.logout:hover {
+  background-color: #c9302c;
 }
 
 /* Imagen principal */
@@ -207,5 +219,13 @@ body {
 
 .footer-right a:hover {
   text-decoration: underline;
+}
+
+.profile-pic {
+  width: 50px; /* Ajusta el tamaño según tus necesidades */
+  height: 50px; /* Mantiene la proporción cuadrada */
+  border-radius: 50%; /* Hace que la imagen sea circular */
+  object-fit: cover; /* Asegura que la imagen llene el contenedor sin distorsionarse */
+  border: 2px solid #ffffff; /* Opcional: agrega un borde blanco alrededor de la foto */
 }
 

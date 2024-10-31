@@ -33,7 +33,7 @@
     color: #22223b;
     margin: 0;
     padding: 10px;
-    text-shadow: 2px 2px #c9ada7;
+    text-shadow: 2px 2px #a8a7c9;
 }
 
 .notfound-message {
@@ -47,7 +47,7 @@
     display: inline-block;
     text-decoration: none;
     color: white;
-    background-color: #9a8c98;
+    background-color: #8f8c9a;
     padding: 12px 25px;
     border-radius: 30px;
     font-weight: bold;

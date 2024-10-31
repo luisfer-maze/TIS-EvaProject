@@ -3,19 +3,40 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProyectosController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Auth\DocenteAuthController;
+use App\Http\Controllers\Auth\EstudianteAuthController;
+use App\Http\Controllers\Auth\DocentePasswordResetController;
+use App\Http\Controllers\Auth\EstudiantePasswordResetController;
 use App\Http\Middleware\CheckAdmin;
+use App\Http\Controllers\PasswordResetController;
 
 // Ruta de login para cargar la aplicación React
 Route::get('/login', function () {
     return view('welcome'); // Carga tu aplicación React
 })->name('login');
 
-// Rutas de autenticación
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout']);
-Route::get('/api/usuario-logueado', [AuthController::class, 'getLoggedUser']);
+// Rutas de autenticación para docentes
+Route::prefix('docente')->group(function () {
+    Route::post('/login', [DocenteAuthController::class, 'login']);
+    Route::post('/logout', [DocenteAuthController::class, 'logout']);
+    Route::post('/password/forgot', [PasswordResetController::class, 'sendResetLinkEmail']);
+});
 
-// Rutas de la API para proyectos, con autenticación para docentes
+// Rutas de autenticación para estudiantes
+Route::prefix('estudiante')->group(function () {
+    Route::post('/login', [EstudianteAuthController::class, 'login']);
+    Route::post('/logout', [EstudianteAuthController::class, 'logout']);
+    Route::post('/password/forgot', [PasswordResetController::class, 'sendResetLinkEmail']);
+});
+
+// Ruta para restablecer la contraseña
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
+
+// Ruta para obtener el usuario logueado (para ambos roles)
+Route::get('/api/usuario-logueado', [AuthController::class, 'getLoggedUser'])
+    ->middleware('auth:docente,estudiante');
+
+// Rutas de la API para proyectos (solo accesibles para docentes autenticados)
 Route::prefix('api')->middleware(['auth:docente'])->group(function () {
     Route::get('/proyectos', [ProyectosController::class, 'index']);
     Route::post('/proyectos', [ProyectosController::class, 'store']);
@@ -23,23 +44,21 @@ Route::prefix('api')->middleware(['auth:docente'])->group(function () {
     Route::delete('/proyectos/{id}', [ProyectosController::class, 'destroy']);
 });
 
-// Rutas protegidas por autenticación de docente y estudiante para actualizar perfil y cambiar contraseña
-Route::post('/api/usuario-logueado/update', [AuthController::class, 'updateProfile'])
-    ->middleware('auth:docente,estudiante');
-
-Route::post('/api/usuario-logueado/change-password', [AuthController::class, 'changePassword'])
-    ->middleware('auth:docente,estudiante');
-
-// Rutas para la administración de usuarios (solo accesibles para administradores)
-// Rutas de administración protegidas por autenticación y verificación de administrador
-Route::middleware(['auth:docente', CheckAdmin::class])->prefix('api')->group(function () {
-    Route::get('/pending-users', [AuthController::class, 'getPendingUsers']);
-    Route::post('/approve-user/{id}', [AuthController::class, 'approveUser']);
-    Route::post('/assign-admin/{id}', [AuthController::class, 'assignAdmin']);
-    Route::get('/all-users', [AuthController::class, 'getAllUsers']);
+// Rutas para actualizar perfil y cambiar contraseña, protegidas por autenticación de docente y estudiante
+Route::middleware('auth:docente,estudiante')->group(function () {
+    Route::post('/api/usuario-logueado/update', [AuthController::class, 'updateProfile']);
+    Route::post('/api/usuario-logueado/change-password', [AuthController::class, 'changePassword']);
 });
 
-// Ruta para el registro de usuarios
+// Rutas de administración protegidas por autenticación de docente y verificación de administrador
+Route::middleware(['auth:docente', CheckAdmin::class])->prefix('api')->group(function () {
+    Route::get('/pending-users', [DocenteAuthController::class, 'getPendingUsers']);
+    Route::post('/approve-user/{id}', [DocenteAuthController::class, 'approveUser']);
+    Route::post('/assign-admin/{id}', [DocenteAuthController::class, 'assignAdmin']);
+    Route::get('/all-users', [DocenteAuthController::class, 'getAllUsers']);
+});
+
+// Ruta para el registro de usuarios (accesible para ambos roles)
 Route::post('/api/register', [AuthController::class, 'register']);
 
 // Ruta de prueba para verificar funcionamiento del backend
@@ -51,3 +70,8 @@ Route::get('/test', function () {
 Route::get('/{any}', function () {
     return view('welcome');  // Carga la vista de React
 })->where('any', '.*');
+
+// Ruta de prueba para la vista de correo electrónico
+Route::get('/test-email-view', function() {
+    return view('emails.test');
+});
