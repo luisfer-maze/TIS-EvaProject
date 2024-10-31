@@ -7,6 +7,7 @@ import Proyectos from './Pages/Proyectos';
 import HomePage from './Pages/HomePage';
 import Register from './Pages/Register';
 import ForgotPassword from './Pages/ForgotPassword';
+import ResetPassword from './Pages/ResetPassword';
 import ProyectoEstudiante from './Pages/ProyectoEstudiante';
 import PlanificacionEstudiante from './Pages/PlanificacionEstudiante';
 import HistoriaUsuario from './Pages/HistoriaUsuario';
@@ -45,7 +46,7 @@ function App() {
         <Route path="/historia-usuario/:id" element={<HistoriaUsuario />} />
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/approve-accounts" element={<ApproveAccounts />} />
-        {/* Ruta catch-all para mostrar la página de "Página en Construcción" */}
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
