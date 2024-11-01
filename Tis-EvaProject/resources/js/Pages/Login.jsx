@@ -117,7 +117,8 @@ function App() {
                             )}
                         </span>
                     </div>
-                    <button type="submit">Iniciar Sesión</button>
+                    <button type="submit" className="styled-button">Iniciar Sesión</button>
+
                 </form>
 
                 <div className="extra-links">

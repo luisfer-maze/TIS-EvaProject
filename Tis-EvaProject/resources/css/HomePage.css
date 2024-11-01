@@ -119,36 +119,50 @@ body {
 }
 
 .btn-primary {
-  background-color: #015FA9;
-  border: none; /* Elimina el borde por defecto */
-  border-radius: 0.5vw;
+  padding: 1vh 2vw; /* Padding adaptable a la altura y ancho de la pantalla */
+  text-transform: uppercase;
+  border-radius: 0.5vw; /* Borde redondeado adaptable */
+  font-size: 1.1vw; /* Tamaño de fuente adaptativo */
+  font-weight: 500;
   color: white;
-  padding: 1.2vh 2.4vw;
-  font-size: 1vw;
-  text-decoration: none;
-  transition: background-color 0.3s ease;
-  margin-top: 1vw;
-  text-align: center;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: none; /* Elimina cualquier sombra */
+  background: transparent;
+  cursor: pointer;
+  border: 0.1vw solid #ffffff80; /* Borde adaptativo */
+  transition: 0.5s ease;
+  text-shadow: none;
+  box-shadow: none;
+  user-select: none;
+  text-decoration: none; /* Quita el subrayado */
 }
 
-.btn-primary:hover {
-  background-color: #01457c;
+.btn-primary:hover,
+.btn-primary:focus {
+  color: #ffffff;
+  background: #008cff;
+  border: 0.1vw solid #008cff; /* Borde adaptativo */
+  text-shadow: 0 0 0.3vw #ffffff, 0 0 0.6vw #ffffff, 0 0 1.2vw #ffffff;
+  box-shadow: 0 0 0.3vw #008cff, 0 0 1.2vw #008cff, 0 0 3vw #008cff,
+    0 0 6vw #008cff;
 }
 
 /* Estilos específicos para el botón de "Cerrar sesión" */
 .btn-primary.logout {
-  background-color: #d9534f;
-  border: none;
-  box-shadow: none;
+  color: white;
+  background: transparent;
+  border: 0.1vw solid #d9534f; /* Borde adaptativo */
+  transition: 0.5s ease;
 }
 
-.btn-primary.logout:hover {
-  background-color: #c9302c;
+.btn-primary.logout:hover,
+.btn-primary.logout:focus {
+  color: #ffffff;
+  background: #d9534f;
+  border: 0.1vw solid #d9534f; /* Borde adaptativo */
+  text-shadow: 0 0 0.3vw #ffffff, 0 0 0.6vw #ffffff, 0 0 1.2vw #ffffff;
+  box-shadow: 0 0 0.3vw #d9534f, 0 0 1.2vw #d9534f, 0 0 3vw #d9534f,
+    0 0 6vw #d9534f;
 }
+
 
 /* Imagen principal */
 .main-image {
