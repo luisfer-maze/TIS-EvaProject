@@ -44,6 +44,8 @@ html, body {
     box-sizing: border-box;
     height: 60px;
   }
+ 
+  
   
   .groups-header h2 {
     margin: 0;
@@ -278,4 +280,75 @@ html, body {
   .delete-btn:hover {
     background-color: #c0392b;
   }
+  /* Estilos para el contenedor de requerimientos */
+  .contenedor-requerimientos1 {
+    background-color: #C8EBFF;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 40vh 0 20px; /* Ajusta 40vh según sea necesario */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
   
+
+.titulo-requerimientos1 {
+  font-size: 1.2em;
+  margin-bottom: 15px;
+  color: #070202;
+}
+
+.lista-requerimientos1 {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item-requerimiento1 {
+  display: flex;
+  justify-content: space-between; /* Asegura que el texto y los iconos estén en extremos opuestos */
+  align-items: center;
+  background-color: #1a355b;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+.texto-item {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.iconos-acciones {
+  display: flex;
+  gap: 10px;
+}
+
+.icono-editar, .icono-eliminar {
+  cursor: pointer;
+  padding: 5px;
+}
+
+.icono-editar {
+  color: #007bff;
+}
+
+.icono-eliminar {
+  color: #dc3545;
+}
+
+.boton-agregar {
+  margin-top: 15px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.boton-agregar:hover {
+  background-color: #0056b3;
+}
