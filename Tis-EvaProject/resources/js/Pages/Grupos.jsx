@@ -1,26 +1,71 @@
 import React, { useState, useEffect } from "react";
 import HeaderProyecto from "../Components/HeaderProyecto";
+import Sidebar from "../Components/Sidebar";
 import "../../css/grupos.css";
+import "../../css/Sidebar.css";
 import "../../css/HeaderProyecto.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 const Grupos = () => {
+    const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [showCreateSuccessMessage, setShowCreateSuccessMessage] =
-        useState(false);
+    const [showCreateSuccessMessage, setShowCreateSuccessMessage] = useState(false);
     const [showEditSuccessMessage, setShowEditSuccessMessage] = useState(false);
-    const [showDeleteSuccessMessage, setShowDeleteSuccessMessage] =
-        useState(false);
-    const [showErrorMessage, setShowErrorMessage] = useState(false); // Estado para el mensaje de error
-    const [errorMessage, setErrorMessage] = useState(""); // Estado para el texto del mensaje de error
+    const [showDeleteSuccessMessage, setShowDeleteSuccessMessage] = useState(false);
+    const [showErrorMessage, setShowErrorMessage] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
     const [groupName, setGroupName] = useState("");
     const [groupDescription, setGroupDescription] = useState("");
     const [groups, setGroups] = useState([]);
     const [groupToDelete, setGroupToDelete] = useState(null);
-    const [groupToEdit, setGroupToEdit] = useState(null); // Estado para el grupo a editar
+    const [groupToEdit, setGroupToEdit] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [image, setImage] = useState(null); // Estado para la imagen seleccionada
+    const [image, setImage] = useState(null);
+        // Nuevos estados para requerimientos
+        const [requerimientos, setRequerimientos] = useState([]);
+        const [isReqModalOpen, setReqModalOpen] = useState(false);
+        const [nuevoReq, setNuevoReq] = useState("");
+        const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+        const [elementTypeToDelete, setElementTypeToDelete] = useState("");
+        const [elementToDeleteIndex, setElementToDeleteIndex] = useState(null);
+    
+        // Funciones para manejar requerimientos
+        const abrirModalReq = () => setReqModalOpen(true);
+        
+        const cerrarModalReq = () => {
+            setReqModalOpen(false);
+            setNuevoReq("");
+        };
+    
+        const guardarRequerimiento = () => {
+            if (nuevoReq) {
+                setRequerimientos([...requerimientos, nuevoReq]);
+                cerrarModalReq();
+            }
+        };
+    
+        const editarRequerimiento = (index) => {
+            const req = requerimientos[index];
+            setNuevoReq(req);
+            abrirModalReq();
+        };
+    
+        const abrirModalConfirmacion = (type, index) => {
+            setElementTypeToDelete(type);
+            setElementToDeleteIndex(index);
+            setIsConfirmModalOpen(true);
+        };
+    
+        const eliminarElemento = () => {
+            if (elementTypeToDelete === "requerimiento") {
+                setRequerimientos(requerimientos.filter((_, i) => i !== elementToDeleteIndex));
+            }
+            setIsConfirmModalOpen(false);
+        };
+    
+    const toggleSidebar = () => setSidebarCollapsed(!isSidebarCollapsed);
+
     const isModalOpen =
         showModal ||
         showConfirmModal ||
@@ -185,8 +230,14 @@ const Grupos = () => {
     };
 
     return (
-        <div>
-            <HeaderProyecto isModalOpen={isModalOpen} />
+        <div className={`grupos ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
+        <HeaderProyecto isModalOpen={isModalOpen} />
+        
+        <div className="contenido-con-sidebar">
+            <Sidebar
+                isSidebarCollapsed={isSidebarCollapsed}
+                toggleSidebar={toggleSidebar}
+            />
 
             <div className={`container ${isModalOpen ? "disabled" : ""}`}>
                 <div className="groups-header">
@@ -205,6 +256,31 @@ const Grupos = () => {
                         <i className="fas fa-plus"></i> Nuevo grupo
                     </button>
                 </div>
+               
+                 {/* Contenedor de Requerimientos */}
+                 <div className="contenedor-requerimientos1">
+                        <h2 className="titulo-requerimientos1">Requerimientos</h2>
+                        <div className="lista-requerimientos1">
+                            {requerimientos.map((req, index) => (
+                                <div key={index} className="item-requerimiento1">
+                                    <span className="texto-item">{req}</span>
+                                    <div className="iconos-acciones">
+                                        <i
+                                            className="fas fa-edit icono-editar"
+                                            onClick={() => editarRequerimiento(index)}
+                                        ></i>
+                                        <i
+                                            className="fas fa-trash-alt icono-eliminar"
+                                            onClick={() => abrirModalConfirmacion("requerimiento", index)}
+                                        ></i>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <button className="boton-agregar" onClick={abrirModalReq}>
+                            + Requerimiento
+                        </button>
+                    </div>
 
                 <div className="group-list">
                     {groups.map((group, index) => (
@@ -325,8 +401,53 @@ const Grupos = () => {
             </div>
         </div>
     </div>
+    
 )}
+                    {/* Modal para Requerimientos */}
+                    {isReqModalOpen && (
+                        <div className="modal">
+                            <div className="modal-content">
+                                <h3>{nuevoReq ? "Editar Requerimiento" : "Nuevo Requerimiento"}</h3>
+                                <input
+                                    type="text"
+                                    value={nuevoReq}
+                                    onChange={(e) => setNuevoReq(e.target.value)}
+                                    placeholder="Escriba el requerimiento"
+                                    className="input-field"
+                                />
+                                <div className="modal-actions">
+                                    <button onClick={cerrarModalReq} className="cancel-btn">
+                                        Cancelar
+                                    </button>
+                                    <button onClick={guardarRequerimiento} className="create-btn">
+                                        {nuevoReq ? "Guardar cambios" : "Agregar"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
+                    {/* Modal de Confirmación */}
+                    {isConfirmModalOpen && (
+                        <div className="modal">
+                            <div className="modal-content">
+                                <h3>¿Estás seguro de que quieres eliminar este {elementTypeToDelete}?</h3>
+                                <div className="modal-actions">
+                                <button
+                                        onClick={() => setIsConfirmModalOpen(false)}
+                                        className="cancel-btn"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button onClick={eliminarElemento} style={{ backgroundColor: 'red', color: 'white', border: 'none', padding: '10px', cursor: 'pointer' }}>
+                                          Eliminar
+                                 </button>
+
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
             {/* Modal de confirmación de eliminación */}
             {showConfirmModal && (
@@ -403,6 +524,7 @@ const Grupos = () => {
                 </div>
             )}
         </div>
+        </div> 
     );
 };
 
