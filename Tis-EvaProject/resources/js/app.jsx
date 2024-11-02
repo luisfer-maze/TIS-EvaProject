@@ -12,6 +12,7 @@ import ProyectoEstudiante from './Pages/ProyectoEstudiante';
 import PlanificacionEstudiante from './Pages/PlanificacionEstudiante';
 import HistoriaUsuario from './Pages/HistoriaUsuario';
 import Perfil from "./Pages/Perfil";
+import PerfilEstudiante from  "./Pages/PerfilEstudiante";
 import ApproveAccounts from './Pages/ApproveAccounts';
 import Grupos from './Pages/Grupos';
 import Estudiantes from "./Pages/Estudiantes"; // Importa el nuevo componente
@@ -47,6 +48,7 @@ function App() {
         <Route path="/planificacion-estudiante" element={<PlanificacionEstudiante />} />
         <Route path="/historia-usuario/:id" element={<HistoriaUsuario />} />
         <Route path="/perfil" element={<Perfil />} />
+        <Route path="/perfil-estudiante" element={<PerfilEstudiante />} />
         <Route path="/approve-accounts" element={<ApproveAccounts />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*" element={<NotFound />} />

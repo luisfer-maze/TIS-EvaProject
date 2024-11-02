@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ReactQuill from 'react-quill';
-import Sidebar from "../Components/Sidebar";
-import Header from "../Components/Header";
+import Sidebar from "../Components/SidebarEstudiante";
+import Header from "../Components/HeaderEstudiante";
 import "react-quill/dist/quill.snow.css"; // Importar el CSS del tema
 import "../../css/Sidebar.css"; // Importa el CSS del sidebar
 import "../../css/PlanificacionEstudiante.css"; // Importa el CSS del header

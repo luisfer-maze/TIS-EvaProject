@@ -1,7 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // Importación de useNavigate
-import Sidebar from "../Components/Sidebar";
-import Header from "../Components/Header";
+import Sidebar from "../Components/SidebarEstudiante";
+import Header from "../Components/HeaderEstudiante";
+import axios from "axios";
 import "../../css/PlanificacionEstudiante.css";
 import "../../css/Sidebar.css";
 import "../../css/Proyectos.css";
@@ -10,6 +11,8 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 const PlanificacionEstudiante = () => {
     const navigate = useNavigate();
+    const [proyecto, setProyecto] = useState(null);
+    const [grupo, setGrupo] = useState(null);
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [sprints, setSprints] = useState([]); // Inicia como lista vacía
     const [historiasUsuario, setHistoriasUsuario] = useState([]);
@@ -32,6 +35,23 @@ const PlanificacionEstudiante = () => {
     const [nuevaHU, setNuevaHU] = useState({ titulo: "", descripcion: "" });
     const [archivos, setArchivos] = useState([]);
     const fileInputRef = useRef(null);
+    useEffect(() => {
+        const obtenerDatosEstudiante = async () => {
+            try {
+                const response = await axios.get("/estudiante/proyecto-grupo");
+                console.log("Datos del estudiante:", response.data); // Muestra los datos en la consola
+                if (response.data) {
+                    setProyecto(response.data.proyecto);
+                    setGrupo(response.data.grupo);
+                }
+            } catch (error) {
+                console.error("Error al cargar los datos del estudiante", error);
+            }
+        };
+    
+        obtenerDatosEstudiante();
+    }, []);
+    
     const toggleSidebar = () => setSidebarCollapsed(!isSidebarCollapsed);
     const abrirModal = () => {
         setIsModalOpen(true);

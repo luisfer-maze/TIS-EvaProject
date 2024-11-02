@@ -20,7 +20,7 @@ class Estudiante extends Authenticatable
         'ID_GRUPO',
         'ID_PROYECTO', // Añadir aquí si falta
     ];
-    
+
 
     protected $hidden = [
         'PASSWORD_EST',
@@ -34,5 +34,14 @@ class Estudiante extends Authenticatable
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ResetPasswordNotification($token));
+    }
+    public function proyecto()
+    {
+        return $this->belongsTo(Proyectos::class, 'ID_PROYECTO', 'ID_PROYECTO');
+    }
+
+    public function grupo()
+    {
+        return $this->belongsTo(Grupo::class, 'ID_GRUPO', 'ID_GRUPO');
     }
 }

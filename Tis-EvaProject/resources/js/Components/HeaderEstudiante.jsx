@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import "../../css/Proyectos.css";
+import "../../css/HeaderEstudiante.css";
 
-const HeaderProyecto = ({ isModalOpen }) => {
+const HeaderEstudiante = ({ isModalOpen }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [userData, setUserData] = useState({
         nombre: "Usuario",
@@ -27,7 +27,6 @@ const HeaderProyecto = ({ isModalOpen }) => {
                         foto: data.foto
                             ? `http://localhost:8000/storage/${data.foto}`
                             : "https://via.placeholder.com/50",
-                        isAdmin: data.is_admin, // Asignamos si es administrador
                     });
                 }
             })
@@ -87,29 +86,27 @@ const HeaderProyecto = ({ isModalOpen }) => {
                 console.error("Error al cerrar sesión:", error);
             }
         } else if (option === "profile") {
-            window.location.href = "/perfil";
-        } else if (option === "projects") {
-            window.location.href = "/proyectos"; // Redirección a la página de proyectos
-        } else if (option === "approveUsers" && userData.isAdmin) {
-            window.location.href = "/approve-accounts";
-        }
+            window.location.href = "/perfil-estudiante";
+        } else if (option === "backlog") {
+            window.location.href = "/planificacion-estudiante"; // Redirección a la página de proyectos
+        } 
     
         setIsDropdownOpen(false);
     };
     
 
     return (
-        <div className={`header ${isModalOpen ? "disabled" : ""}`}>
-            <div className="logo"></div>
+        <div className={`header-est ${isModalOpen ? "disabled" : ""}`}>
+            <div className="logo-est"></div>
             <div
-                className="user-icon-container"
+                className="user-icon-container-est"
                 onMouseEnter={openDropdown}
                 onMouseLeave={closeDropdown}
             >
                 <img
                     src={userData.foto}
                     alt="Foto de perfil"
-                    className="profile-image"
+                    className="profile-image-est"
                     onClick={() => handleOptionClick("profile")}
                 />
                 <i className="fas fa-chevron-down dropdown-icon"></i>
@@ -117,27 +114,27 @@ const HeaderProyecto = ({ isModalOpen }) => {
 
             {isDropdownOpen && (
                 <div
-                    className="dropdown-menu"
+                    className="dropdown-menu-est"
                     ref={dropdownRef}
                     onMouseEnter={openDropdown}
                     onMouseLeave={closeDropdown}
                 >
-                    <div className="dropdown-header">
+                    <div className="dropdown-header-est">
                         <div className="profile-container">
                             <img
                                 src={userData.foto}
                                 alt="Foto de perfil"
-                                className="perfil-image"
+                                className="perfil-image-est"
                             />
-                            <div className="profile-info">
-                                <span className="user-name">
+                            <div className="profile-info-est">
+                                <span className="user-name-est">
                                     {userData.nombre}
                                 </span>
-                                <span className="user-email">
+                                <span className="user-email-est">
                                     {userData.email}
                                 </span>
                                 <button
-                                    className="edit-profile-button"
+                                    className="edit-profile-button-est"
                                     onClick={() => handleOptionClick("profile")}
                                 >
                                     Editar perfil
@@ -145,30 +142,30 @@ const HeaderProyecto = ({ isModalOpen }) => {
                             </div>
                         </div>
                     </div>
-                    <div className="dropdown-divider"></div>
-                    <ul className="dropdown-options">
+                    <div className="dropdown-divider-est"></div>
+                    <ul className="dropdown-options-est">
                         <li
-                            className="dropdown-button"
+                            className="dropdown-button-est"
                             onClick={() => handleOptionClick("settings")}
                         >
                             Configuración de cuenta
                         </li>
                         <li
-                            className="dropdown-button"
+                            className="dropdown-button-est"
                             onClick={() => handleOptionClick("notifications")}
                         >
                             Notificaciones
                         </li>
                         <li
-                            className="dropdown-button"
-                            onClick={() => handleOptionClick("projects")}
+                            className="dropdown-button-est"
+                            onClick={() => handleOptionClick("backlog")}
                         >
-                            Proyectos
+                            Backlog
                         </li>
                         {/* Solo mostrar "Aprobar Usuarios" si el usuario es administrador */}
                         {userData.isAdmin ? (
                             <li
-                                className="dropdown-button"
+                                className="dropdown-button-est"
                                 onClick={() =>
                                     handleOptionClick("approveUsers")
                                 }
@@ -177,9 +174,9 @@ const HeaderProyecto = ({ isModalOpen }) => {
                             </li>
                         ) : null}
                     </ul>
-                    <div className="dropdown-divider"></div>
+                    <div className="dropdown-divider-est"></div>
                     <button
-                        className="logout-button"
+                        className="logout-button-est"
                         onClick={() => handleOptionClick("logout")}
                     >
                         Cerrar sesión
@@ -190,4 +187,4 @@ const HeaderProyecto = ({ isModalOpen }) => {
     );
 };
 
-export default HeaderProyecto;
+export default HeaderEstudiante;

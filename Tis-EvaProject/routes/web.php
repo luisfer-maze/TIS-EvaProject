@@ -30,6 +30,10 @@ Route::prefix('estudiante')->group(function () {
     Route::post('/password/forgot', [PasswordResetController::class, 'sendResetLinkEmail']);
 });
 
+Route::middleware(['auth:estudiante'])->prefix('estudiante')->group(function () {
+    Route::get('/proyecto-grupo', [EstudianteController::class, 'obtenerProyectoYGrupo']);
+});
+
 // Ruta para restablecer la contraseña
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 
@@ -65,7 +69,6 @@ Route::prefix('api')->middleware(['auth:docente'])->group(function () {
     Route::post('/estudiantes', [EstudianteController::class, 'store']);
     Route::get('/estudiantes', [EstudianteController::class, 'index']);
     Route::delete('/estudiantes/{id}', [EstudianteController::class, 'destroy']);
-
 });
 
 // Rutas para actualizar perfil y cambiar contraseña, protegidas por autenticación de docente y estudiante
@@ -96,6 +99,6 @@ Route::get('/{any}', function () {
 })->where('any', '.*');
 
 // Ruta de prueba para la vista de correo electrónico
-Route::get('/test-email-view', function() {
+Route::get('/test-email-view', function () {
     return view('emails.test');
 });

@@ -6,6 +6,7 @@ use App\Models\Estudiante;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class EstudianteController extends Controller
@@ -71,5 +72,27 @@ class EstudianteController extends Controller
             return response()->json(['message' => 'Estudiante eliminado'], 200);
         }
         return response()->json(['error' => 'Estudiante no encontrado'], 404);
+    }
+    public function obtenerProyectoYGrupo(Request $request)
+    {
+        try {
+            // Verifica que el usuario esté autenticado
+            $estudianteId = $request->user()->id; // Esto arroja un error si el usuario no está autenticado
+
+            // Buscar el estudiante junto con su proyecto y grupo
+            $estudiante = Estudiante::with(['proyecto', 'grupo'])->find($estudianteId);
+
+            if (!$estudiante) {
+                return response()->json(['message' => 'Estudiante no encontrado'], 404);
+            }
+
+            return response()->json([
+                'proyecto' => $estudiante->proyecto,
+                'grupo' => $estudiante->grupo,
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Error al obtener proyecto y grupo: " . $e->getMessage());
+            return response()->json(['message' => 'Error al obtener datos del estudiante'], 500);
+        }
     }
 }
