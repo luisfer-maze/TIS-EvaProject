@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import HeaderProyecto from "../Components/HeaderProyecto";
-import Sidebar from "../Components/Sidebar";
-import "../../css/grupos.css";
-import "../../css/Sidebar.css";
-import "../../css/HeaderProyecto.css";
+import "../../css/Proyectos.css"; // Reutiliza el CSS de Proyectos
+import "../../css/Grupos.css"; // Reutiliza el CSS de Proyectos
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import ModalConfirmacion from "../Components/ModalConfirmacion";
+import ModalMensajeExito from "../Components/ModalMensajeExito";
+import ModalError from "../Components/ModalError";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const Grupos = () => {
-    const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const navigate = useNavigate();
+    const { projectId } = useParams();
     const [showModal, setShowModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [showCreateSuccessMessage, setShowCreateSuccessMessage] = useState(false);
+    const [showCreateSuccessMessage, setShowCreateSuccessMessage] =
+        useState(false);
     const [showEditSuccessMessage, setShowEditSuccessMessage] = useState(false);
-    const [showDeleteSuccessMessage, setShowDeleteSuccessMessage] = useState(false);
+    const [showDeleteSuccessMessage, setShowDeleteSuccessMessage] =
+        useState(false);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
     const [groupName, setGroupName] = useState("");
     const [groupDescription, setGroupDescription] = useState("");
     const [groups, setGroups] = useState([]);
@@ -22,50 +28,6 @@ const Grupos = () => {
     const [groupToEdit, setGroupToEdit] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [image, setImage] = useState(null);
-        // Nuevos estados para requerimientos
-        const [requerimientos, setRequerimientos] = useState([]);
-        const [isReqModalOpen, setReqModalOpen] = useState(false);
-        const [nuevoReq, setNuevoReq] = useState("");
-        const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-        const [elementTypeToDelete, setElementTypeToDelete] = useState("");
-        const [elementToDeleteIndex, setElementToDeleteIndex] = useState(null);
-    
-        // Funciones para manejar requerimientos
-        const abrirModalReq = () => setReqModalOpen(true);
-        
-        const cerrarModalReq = () => {
-            setReqModalOpen(false);
-            setNuevoReq("");
-        };
-    
-        const guardarRequerimiento = () => {
-            if (nuevoReq) {
-                setRequerimientos([...requerimientos, nuevoReq]);
-                cerrarModalReq();
-            }
-        };
-    
-        const editarRequerimiento = (index) => {
-            const req = requerimientos[index];
-            setNuevoReq(req);
-            abrirModalReq();
-        };
-    
-        const abrirModalConfirmacion = (type, index) => {
-            setElementTypeToDelete(type);
-            setElementToDeleteIndex(index);
-            setIsConfirmModalOpen(true);
-        };
-    
-        const eliminarElemento = () => {
-            if (elementTypeToDelete === "requerimiento") {
-                setRequerimientos(requerimientos.filter((_, i) => i !== elementToDeleteIndex));
-            }
-            setIsConfirmModalOpen(false);
-        };
-    
-    const toggleSidebar = () => setSidebarCollapsed(!isSidebarCollapsed);
-
     const isModalOpen =
         showModal ||
         showConfirmModal ||
@@ -73,31 +35,31 @@ const Grupos = () => {
         showEditSuccessMessage ||
         showDeleteSuccessMessage ||
         showErrorMessage;
+    const [requirements, setRequirements] = useState([]);
+    const [projectDetails, setProjectDetails] = useState({});
 
-    // Obtener lista de grupos al cargar el componente
     useEffect(() => {
-        fetch("http://localhost:8000/api/grupo", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(
-                        "Error en la solicitud: " + response.status
-                    );
-                }
-                return response.json();
-            })
+        // Lógica para cargar los detalles del proyecto
+        fetch(`http://localhost:8000/api/proyectos/${projectId}`)
+            .then((response) => response.json())
             .then((data) => {
-                console.log("Grupos recibidos:", data); // Imprime los datos en la consola para verificar
-                setGroups(data);
+                console.log("Detalles del proyecto:", data);
+                setProjectDetails(data); // Almacena los detalles en el estado
             })
-            .catch((error) => console.error("Error fetching groups:", error));
-    }, []);
+            .catch((error) => console.error("Error al cargar el proyecto:", error));
+    }, [projectId]);
+    
 
-    // Función para guardar o editar un grupo
+    useEffect(() => {
+        const docenteId = localStorage.getItem("ID_DOCENTE");
+        const role = localStorage.getItem("ROLE");
+
+        if (!docenteId || role !== "Docente") {
+            // Si no hay un docente logueado, redirige al login
+            navigate("/login");
+        }
+    }, [navigate]);
+
     const handleSaveGroup = () => {
         if (!groupName || !groupDescription) {
             setErrorMessage(
@@ -107,71 +69,28 @@ const Grupos = () => {
             return;
         }
 
-        const csrfToken = document
-            .querySelector('meta[name="csrf-token"]')
-            ?.getAttribute("content");
+        const newGroup = {
+            NOMBRE_GRUPO: groupName,
+            DESCRIP_GRUPO: groupDescription,
+            PORTADA_GRUPO: image ? URL.createObjectURL(image) : null,
+        };
 
-        const formData = new FormData();
-        formData.append("NOMBRE_GRUPO", groupName);
-        formData.append("DESCRIP_GRUPO", groupDescription);
-        formData.append("FECHA_INICIO_GRUPO", "2024-01-01");
-        formData.append("FECHA_FIN_GRUPO", "2024-12-31");
+        const updatedGroups = isEditing
+            ? groups.map((group) => (group === groupToEdit ? newGroup : group))
+            : [...groups, newGroup];
 
-        if (image) {
-            formData.append("PORTADA_GRUPO", image);
-        }
-
-        if (isEditing) {
-            formData.append("_method", "PUT"); // Forzar el método PUT mediante el campo _method
-        }
-
-        const url = isEditing
-            ? `http://localhost:8000/api/grupo/${groupToEdit.ID_GRUPO}`
-            : "http://localhost:8000/api/grupo";
-
-        fetch(url, {
-            method: "POST", // Usamos POST en lugar de PUT
-            headers: {
-                "X-CSRF-TOKEN": csrfToken,
-            },
-            body: formData,
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error(
-                        "Error al guardar el grupo: " + response.statusText
-                    );
-                }
-                return response.json();
-            })
-            .then((data) => {
-                const updatedGroups = isEditing
-                    ? groups.map((group) =>
-                          group.ID_GRUPO === groupToEdit.ID_GRUPO
-                              ? data
-                              : group
-                      )
-                    : [...groups, data];
-                setGroups(updatedGroups);
-                setShowModal(false);
-                setShowCreateSuccessMessage(!isEditing);
-                setShowEditSuccessMessage(isEditing);
-            })
-            .catch((error) => {
-                console.error("Error al guardar el grupo:", error);
-                setErrorMessage(
-                    "Hubo un problema al guardar el grupo. Intente nuevamente."
-                );
-                setShowErrorMessage(true);
-            });
+        setGroups(updatedGroups);
+        setShowModal(false);
+        setShowCreateSuccessMessage(!isEditing);
+        setShowEditSuccessMessage(isEditing);
     };
 
     const handleOpenEditModal = (index) => {
         const group = groups[index];
         setGroupName(group.NOMBRE_GRUPO);
         setGroupDescription(group.DESCRIP_GRUPO);
-        setGroupToEdit(group); // Guarda todo el grupo, no solo el ID
-        setImage(null); // Asegúrate de limpiar la imagen seleccionada previamente
+        setGroupToEdit(group);
+        setImage(null);
         setIsEditing(true);
         setShowModal(true);
     };
@@ -182,28 +101,13 @@ const Grupos = () => {
     };
 
     const handleDeleteGroup = () => {
-        const csrfToken = document
-            .querySelector('meta[name="csrf-token"]')
-            .getAttribute("content");
-        fetch(
-            `http://localhost:8000/api/grupo/${groups[groupToDelete].ID_GRUPO}`,
-            {
-                method: "DELETE",
-                headers: {
-                    "X-CSRF-TOKEN": csrfToken,
-                },
-            }
-        )
-            .then(() => {
-                const updatedGroups = groups.filter(
-                    (_, index) => index !== groupToDelete
-                );
-                setGroups(updatedGroups);
-                setShowConfirmModal(false);
-                setGroupToDelete(null);
-                setShowDeleteSuccessMessage(true);
-            })
-            .catch((error) => console.error("Error deleting group:", error));
+        const updatedGroups = groups.filter(
+            (_, index) => index !== groupToDelete
+        );
+        setGroups(updatedGroups);
+        setShowConfirmModal(false);
+        setGroupToDelete(null);
+        setShowDeleteSuccessMessage(true);
     };
 
     const handleImageChange = (e) => {
@@ -221,29 +125,41 @@ const Grupos = () => {
 
     const getImagePreview = () => {
         if (image) {
-            return URL.createObjectURL(image); // Muestra la imagen seleccionada en el modal
+            return URL.createObjectURL(image);
         }
         if (isEditing && groupToEdit && groupToEdit.PORTADA_GRUPO) {
-            return `http://localhost:8000/storage/${groupToEdit.PORTADA_GRUPO}`; // Muestra la imagen existente
+            return groupToEdit.PORTADA_GRUPO;
         }
         return null;
     };
+    const handleAddRequirement = () => {
+        setRequirements([...requirements, { description: "" }]);
+    };
+
+    const handleRequirementChange = (index, value) => {
+        const updatedRequirements = [...requirements];
+        updatedRequirements[index].description = value;
+        setRequirements(updatedRequirements);
+    };
+
+    const toggleEditRequirement = (index, isEditing) => {
+        const updatedRequirements = [...requirements];
+        updatedRequirements[index].isEditing = isEditing;
+        setRequirements(updatedRequirements);
+    };
+
+    const handleDeleteRequirement = (index) => {
+        setRequirements(requirements.filter((_, i) => i !== index));
+    };
 
     return (
-        <div className={`grupos ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
-        <HeaderProyecto isModalOpen={isModalOpen} />
-        
-        <div className="contenido-con-sidebar">
-            <Sidebar
-                isSidebarCollapsed={isSidebarCollapsed}
-                toggleSidebar={toggleSidebar}
-            />
-
+        <div>
+            <HeaderProyecto isModalOpen={isModalOpen} />
             <div className={`container ${isModalOpen ? "disabled" : ""}`}>
-                <div className="groups-header">
+                <div className="projects-header">
                     <h2>Mis grupos</h2>
                     <button
-                        className="new-group-btn"
+                        className="new-project-btn"
                         onClick={() => {
                             setIsEditing(false);
                             setShowModal(true);
@@ -256,38 +172,13 @@ const Grupos = () => {
                         <i className="fas fa-plus"></i> Nuevo grupo
                     </button>
                 </div>
-               
-                 {/* Contenedor de Requerimientos */}
-                 <div className="contenedor-requerimientos1">
-                        <h2 className="titulo-requerimientos1">Requerimientos</h2>
-                        <div className="lista-requerimientos1">
-                            {requerimientos.map((req, index) => (
-                                <div key={index} className="item-requerimiento1">
-                                    <span className="texto-item">{req}</span>
-                                    <div className="iconos-acciones">
-                                        <i
-                                            className="fas fa-edit icono-editar"
-                                            onClick={() => editarRequerimiento(index)}
-                                        ></i>
-                                        <i
-                                            className="fas fa-trash-alt icono-eliminar"
-                                            onClick={() => abrirModalConfirmacion("requerimiento", index)}
-                                        ></i>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        <button className="boton-agregar" onClick={abrirModalReq}>
-                            + Requerimiento
-                        </button>
-                    </div>
 
-                <div className="group-list">
+                <div className="project-list">
                     {groups.map((group, index) => (
-                        <div key={index} className="group-item">
+                        <div key={index} className="project-item">
                             {group.PORTADA_GRUPO ? (
                                 <img
-                                    src={`http://localhost:8000/storage/${group.PORTADA_GRUPO}`}
+                                    src={group.PORTADA_GRUPO}
                                     alt="Icono del grupo"
                                     width="50"
                                     height="50"
@@ -298,11 +189,11 @@ const Grupos = () => {
                                     alt="Icono del grupo"
                                 />
                             )}
-                            <div className="group-info">
+                            <div className="project-info">
                                 <h3>{group.NOMBRE_GRUPO}</h3>
                                 <p>{group.DESCRIP_GRUPO}</p>
                             </div>
-                            <div className="group-actions">
+                            <div className="project-actions">
                                 <button
                                     className="action-btn"
                                     onClick={() => handleOpenEditModal(index)}
@@ -321,210 +212,203 @@ const Grupos = () => {
                         </div>
                     ))}
                 </div>
-            </div>
-
-         {/* Modal para crear/editar grupos */}
-{showModal && (
-    <div className="modal">
-        <div className="modal-content">
-            <h3>
-                {isEditing
-                    ? "Editar grupo"
-                    : "Detalles del grupo"}
-            </h3>
-            <input
-                type="text"
-                value={groupName}
-                onChange={(e) => setGroupName(e.target.value)}
-                placeholder="Nombre del Grupo*"
-                className="input-field"
-            />
-            <div className="description-and-photo">
-                <textarea
-                    value={groupDescription}
-                    onChange={(e) =>
-                        setGroupDescription(e.target.value)
-                    }
-                    placeholder="Descripción del grupo*"
-                    className="textarea-field"
-                />
-                <div className="upload-container">
-                    <p className="upload-title">Incluya una foto del grupo</p>
-                    <div
-                        className="upload-box"
-                        onClick={() =>
-                            document
-                                .getElementById("fileInput")
-                                .click()
-                        }
+                <div className="projects-header">
+                    <h2>Requerimientos</h2>
+                    <button
+                        className="new-project-btn"
+                        onClick={handleAddRequirement}
+                        disabled={isModalOpen}
                     >
-                        {getImagePreview() ? (
-                            <img
-                                src={getImagePreview()}
-                                alt="Vista previa del grupo"
-                                className="image-preview"
-                            />
-                        ) : (
-                            <>
-                                <i className="fas fa-cloud-upload-alt"></i>
-                                <p>
-                                    Pulsa aquí para añadir archivos
-                                </p>
-                            </>
-                        )}
-                    </div>
-                    <input
-                        id="fileInput"
-                        type="file"
-                        accept="image/jpeg, image/png, image/jpg"
-                        style={{ display: "none" }}
-                        onChange={handleImageChange}
-                    />
-                    {image && <p>{image.name}</p>}
+                        <i className="fas fa-plus"></i> Nuevo requerimiento
+                    </button>
+                </div>
+
+                <div className="project-list requerimientos-list">
+                    {requirements.map((requirement, index) => (
+                        <div
+                            key={index}
+                            className="project-item requerimientos-list"
+                        >
+                            {requirement.isEditing ? (
+                                <ReactQuill
+                                    theme="snow"
+                                    value={requirement.description}
+                                    onChange={(value) =>
+                                        handleRequirementChange(index, value)
+                                    }
+                                    className="requirement-quill-editor"
+                                    placeholder="Descripción del requerimiento"
+                                    style={{ width: "100%" }}
+                                />
+                            ) : (
+                                <div className="project-info requerimientos-list">
+                                    <div className="requirement-number-container">
+                                        <span className="requirement-number">{`${
+                                            index + 1
+                                        }.`}</span>
+                                    </div>
+                                    <div className="requirement-text-container">
+                                        <span
+                                            className="requirement-description"
+                                            dangerouslySetInnerHTML={{
+                                                __html:
+                                                    requirement.description ||
+                                                    "Descripción del requerimiento",
+                                            }}
+                                        ></span>
+                                    </div>
+                                </div>
+                            )}
+                            <div className="project-actions requerimientos-list">
+                                <button
+                                    className="action-btn"
+                                    onClick={() =>
+                                        toggleEditRequirement(
+                                            index,
+                                            !requirement.isEditing
+                                        )
+                                    }
+                                >
+                                    <i
+                                        className={
+                                            requirement.isEditing
+                                                ? "fas fa-save"
+                                                : "fas fa-pen"
+                                        }
+                                    ></i>
+                                </button>
+                                <button
+                                    className="action-btn"
+                                    onClick={() =>
+                                        handleDeleteRequirement(index)
+                                    }
+                                >
+                                    <i className="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
-            <div className="modal-actions">
-                <button
-                    onClick={() => setShowModal(false)}
-                    className="cancel-btn"
-                >
-                    Cancelar
-                </button>
-                <button
-                    onClick={handleSaveGroup}
-                    className="create-btn"
-                >
-                    {isEditing
-                        ? "Guardar cambios"
-                        : "Crear grupo"}
-                </button>
-            </div>
-        </div>
-    </div>
-    
-)}
-                    {/* Modal para Requerimientos */}
-                    {isReqModalOpen && (
-                        <div className="modal">
-                            <div className="modal-content">
-                                <h3>{nuevoReq ? "Editar Requerimiento" : "Nuevo Requerimiento"}</h3>
-                                <input
-                                    type="text"
-                                    value={nuevoReq}
-                                    onChange={(e) => setNuevoReq(e.target.value)}
-                                    placeholder="Escriba el requerimiento"
-                                    className="input-field"
-                                />
-                                <div className="modal-actions">
-                                    <button onClick={cerrarModalReq} className="cancel-btn">
-                                        Cancelar
-                                    </button>
-                                    <button onClick={guardarRequerimiento} className="create-btn">
-                                        {nuevoReq ? "Guardar cambios" : "Agregar"}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
 
-                    {/* Modal de Confirmación */}
-                    {isConfirmModalOpen && (
-                        <div className="modal">
-                            <div className="modal-content">
-                                <h3>¿Estás seguro de que quieres eliminar este {elementTypeToDelete}?</h3>
-                                <div className="modal-actions">
-                                <button
-                                        onClick={() => setIsConfirmModalOpen(false)}
-                                        className="cancel-btn"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button onClick={eliminarElemento} style={{ backgroundColor: 'red', color: 'white', border: 'none', padding: '10px', cursor: 'pointer' }}>
-                                          Eliminar
-                                 </button>
-
-                                    
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-            {/* Modal de confirmación de eliminación */}
-            {showConfirmModal && (
+            {/* Modal para crear/editar grupos */}
+            {showModal && (
                 <div className="modal">
                     <div className="modal-content">
-                        <h3>¿Estás seguro de que quieres eliminar este grupo?</h3>
+                        <h3>
+                            {isEditing ? "Editar grupo" : "Detalles del grupo"}
+                        </h3>
+                        <input
+                            type="text"
+                            value={groupName}
+                            onChange={(e) => setGroupName(e.target.value)}
+                            placeholder="Nombre del Grupo*"
+                            className="input-field"
+                        />
+                        <div className="description-and-photo">
+                            <textarea
+                                value={groupDescription}
+                                onChange={(e) =>
+                                    setGroupDescription(e.target.value)
+                                }
+                                placeholder="Descripción del grupo*"
+                                className="textarea-field"
+                            />
+                            <div className="upload-container">
+                                <p className="upload-title">Incluya una foto</p>
+                                <div
+                                    className="upload-box"
+                                    onClick={() =>
+                                        document
+                                            .getElementById("fileInput")
+                                            .click()
+                                    }
+                                >
+                                    {getImagePreview() ? (
+                                        <img
+                                            src={getImagePreview()}
+                                            alt="Vista previa"
+                                            className="image-preview"
+                                        />
+                                    ) : (
+                                        <>
+                                            <i className="fas fa-cloud-upload-alt"></i>
+                                            <p>
+                                                Pulsa aquí para añadir archivos
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
+                                <input
+                                    id="fileInput"
+                                    type="file"
+                                    accept="image/jpeg, image/png, image/jpg"
+                                    style={{ display: "none" }}
+                                    onChange={handleImageChange}
+                                />
+                                {image && <p>{image.name}</p>}
+                            </div>
+                        </div>
                         <div className="modal-actions">
-                            <button onClick={handleDeleteGroup}>
-                                Eliminar
-                            </button>
                             <button
-                                onClick={() => setShowConfirmModal(false)}
+                                onClick={() => setShowModal(false)}
                                 className="cancel-btn"
                             >
                                 Cancelar
                             </button>
+                            <button
+                                onClick={handleSaveGroup}
+                                className="create-btn"
+                            >
+                                {isEditing ? "Guardar cambios" : "Crear grupo"}
+                            </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Modal de éxito en la creación del grupo */}
+            {/* Modal de confirmación de eliminación */}
+            {showConfirmModal && (
+                <ModalConfirmacion
+                    show={showConfirmModal}
+                    onClose={() => setShowConfirmModal(false)}
+                    onConfirm={handleDeleteGroup}
+                    title="Confirmar eliminación"
+                    message="¿Está seguro de que desea eliminar este grupo?"
+                />
+            )}
+
+            {/* Mensaje de éxito para creación */}
             {showCreateSuccessMessage && (
-                <div className="modal">
-                    <div className="modal-content">
-                        <h3>¡Grupo creado con éxito!</h3>
-                        <button
-                            onClick={() => setShowCreateSuccessMessage(false)}
-                        >
-                            Cerrar
-                        </button>
-                    </div>
-                </div>
+                <ModalMensajeExito
+                    message="¡Se creo el grupo exitosamente!"
+                    onClose={() => setShowCreateSuccessMessage(false)}
+                />
             )}
-
-            {/* Modal de éxito en la edición del grupo */}
+            {/* Mensaje de éxito para edición */}
             {showEditSuccessMessage && (
-                <div className="modal">
-                    <div className="modal-content">
-                        <h3>¡Grupo editado con éxito!</h3>
-                        <button
-                            onClick={() => setShowEditSuccessMessage(false)}
-                        >
-                            Cerrar
-                        </button>
-                    </div>
-                </div>
+                <ModalMensajeExito
+                    message="¡Se guardaron los cambios exitosamente!"
+                    onClose={() => setShowEditSuccessMessage(false)}
+                />
             )}
 
-            {/* Modal de éxito en la eliminación del grupo */}
+            {/* Mensaje de éxito para eliminación */}
             {showDeleteSuccessMessage && (
-                <div className="modal">
-                    <div className="modal-content">
-                        <h3>¡Grupo eliminado con éxito!</h3>
-                        <button
-                            onClick={() => setShowDeleteSuccessMessage(false)}
-                        >
-                            Cerrar
-                        </button>
-                    </div>
-                </div>
+                <ModalMensajeExito
+                    message="¡Se eliminó el grupo correctamente!"
+                    onClose={() => setShowDeleteSuccessMessage(false)}
+                />
             )}
 
             {/* Modal de error */}
             {showErrorMessage && (
-                <div className="modal">
-                    <div className="modal-content">
-                        <h3>Error</h3>
-                        <p>{errorMessage}</p>
-                        <button onClick={() => setShowErrorMessage(false)}>
-                            Cerrar
-                        </button>
-                    </div>
-                </div>
+                <ModalError
+                    errorMessage="Por favor, complete todos los campos."
+                    closeModal={() => setShowErrorMessage(false)}
+                />
             )}
         </div>
-        </div> 
     );
 };
 

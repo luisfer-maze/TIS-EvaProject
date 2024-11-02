@@ -4,6 +4,9 @@ import HeaderProyecto from "../Components/HeaderProyecto";
 import "../../css/Proyectos.css";
 import "../../css/HeaderProyecto.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import ModalConfirmacion from "../Components/ModalConfirmacion";
+import ModalMensajeExito from "../Components/ModalMensajeExito";
+import ModalError from "../Components/ModalError";
 
 const Proyectos = () => {
     const navigate = useNavigate();
@@ -32,15 +35,15 @@ const Proyectos = () => {
         showDeleteSuccessMessage ||
         showErrorMessage;
 
-        useEffect(() => {
-            const docenteId = localStorage.getItem("ID_DOCENTE");
-            const role = localStorage.getItem("ROLE");
-    
-            if (!docenteId || role !== "Docente") {
-                // Si no hay un docente logueado, redirige al login
-                navigate("/login");
-            }
-        }, [navigate]);
+    useEffect(() => {
+        const docenteId = localStorage.getItem("ID_DOCENTE");
+        const role = localStorage.getItem("ROLE");
+
+        if (!docenteId || role !== "Docente") {
+            // Si no hay un docente logueado, redirige al login
+            navigate("/login");
+        }
+    }, [navigate]);
     // Obtener lista de proyectos al cargar el componente
     useEffect(() => {
         fetch("http://localhost:8000/api/proyectos", {
@@ -236,7 +239,17 @@ const Proyectos = () => {
                                 />
                             )}
                             <div className="project-info">
-                                <h3>{project.NOMBRE_PROYECTO}</h3>
+                                <h3
+                                    onClick={() =>
+                                        navigate(
+                                            `/grupos/${project.ID_PROYECTO}`
+                                        )
+                                    }
+                                    style={{ cursor: "pointer" }}
+                                >
+                                    {project.NOMBRE_PROYECTO}
+                                </h3>
+
                                 <p>{project.DESCRIP_PROYECTO}</p>
                             </div>
                             <div className="project-actions">
@@ -342,102 +355,44 @@ const Proyectos = () => {
 
             {/* Modal de confirmación de eliminación */}
             {showConfirmModal && (
-                <div className="confirm-modal">
-                    <div className="confirm-modal-content">
-                        <h3>Confirmar eliminación</h3>
-                        <p>¿Está seguro de que desea eliminar este proyecto?</p>
-                        <div className="confirm-modal-actions">
-                            <button
-                                onClick={() => setShowConfirmModal(false)}
-                                className="cancel-btn"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={handleDeleteProject}
-                                className="delete-btn"
-                            >
-                                Eliminar
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <ModalConfirmacion
+                    show={showConfirmModal}
+                    onClose={() => setShowConfirmModal(false)}
+                    onConfirm={handleDeleteProject}
+                    title="Confirmar eliminación"
+                    message="¿Está seguro de que desea eliminar este proyecto?"
+                />
             )}
 
             {/* Mensaje de éxito para creación */}
             {showCreateSuccessMessage && (
-                <div className="success-modal">
-                    <div className="success-modal-content">
-                        <h3>Mensaje</h3>
-                        <div className="success-message">
-                            <i className="fas fa-check-circle"></i>
-                            <p>¡Se creó el proyecto exitosamente!</p>
-                        </div>
-                        <button
-                            onClick={() => setShowCreateSuccessMessage(false)}
-                            className="create-btn"
-                        >
-                            Aceptar
-                        </button>
-                    </div>
-                </div>
+                <ModalMensajeExito
+                    message="¡Se creo el proyecto exitosamente!"
+                    onClose={() => setShowCreateSuccessMessage(false)}
+                />
             )}
-
             {/* Mensaje de éxito para edición */}
             {showEditSuccessMessage && (
-                <div className="success-modal">
-                    <div className="success-modal-content">
-                        <h3>Mensaje</h3>
-                        <div className="success-message">
-                            <i className="fas fa-check-circle"></i>
-                            <p>¡Se guardaron los cambios exitosamente!</p>
-                        </div>
-                        <button
-                            onClick={() => setShowEditSuccessMessage(false)}
-                            className="create-btn"
-                        >
-                            Aceptar
-                        </button>
-                    </div>
-                </div>
+                <ModalMensajeExito
+                    message="¡Se guardaron los cambios exitosamente!"
+                    onClose={() => setShowEditSuccessMessage(false)}
+                />
             )}
 
             {/* Mensaje de éxito para eliminación */}
             {showDeleteSuccessMessage && (
-                <div className="success-modal">
-                    <div className="success-modal-content">
-                        <h3>Mensaje</h3>
-                        <div className="success-message">
-                            <i className="fas fa-check-circle"></i>
-                            <p>¡Se eliminó el proyecto correctamente!</p>
-                        </div>
-                        <button
-                            onClick={() => setShowDeleteSuccessMessage(false)}
-                            className="create-btn"
-                        >
-                            Aceptar
-                        </button>
-                    </div>
-                </div>
+                <ModalMensajeExito
+                    message="¡Se eliminó el proyecto correctamente!"
+                    onClose={() => setShowDeleteSuccessMessage(false)}
+                />
             )}
 
             {/* Modal de error */}
             {showErrorMessage && (
-                <div className="error-modal">
-                    <div className="error-modal-content">
-                        <h3>Error</h3>
-                        <div className="error-message">
-                            <i className="fas fa-exclamation-circle"></i>
-                            <p>Por favor, complete todos los campos.</p>
-                        </div>
-                        <button
-                            onClick={() => setShowErrorMessage(false)}
-                            className="create-btn"
-                        >
-                            Aceptar
-                        </button>
-                    </div>
-                </div>
+                <ModalError
+                    errorMessage="Por favor, complete todos los campos."
+                    closeModal={() => setShowErrorMessage(false)}
+                />
             )}
         </div>
     );

@@ -38,7 +38,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/proyectos" element={<Proyectos />} />
-        <Route path="/grupo" element={<Grupos />} />
+        <Route path="/grupos/:projectId" element={<Grupos />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/proyecto-estudiante" element={<ProyectoEstudiante />} />

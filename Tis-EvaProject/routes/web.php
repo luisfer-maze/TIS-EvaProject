@@ -42,6 +42,7 @@ Route::prefix('api')->middleware(['auth:docente'])->group(function () {
     Route::post('/proyectos', [ProyectosController::class, 'store']);
     Route::put('/proyectos/{id}', [ProyectosController::class, 'update']);
     Route::delete('/proyectos/{id}', [ProyectosController::class, 'destroy']);
+    Route::get('/proyectos/{id}', [ProyectosController::class, 'show']);
 });
 
 // Rutas para actualizar perfil y cambiar contraseña, protegidas por autenticación de docente y estudiante
