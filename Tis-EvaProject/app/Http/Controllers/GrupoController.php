@@ -127,4 +127,22 @@ class GrupoController extends Controller
         $grupo->delete();
         return response()->json(['message' => 'Grupo eliminado con éxito']);
     }
+    // Mostrar los detalles de un grupo específico
+    public function show($id)
+    {
+        $docenteId = Auth::guard('docente')->id();
+        if (!$docenteId) {
+            return response()->json(['message' => 'No autorizado'], 401);
+        }
+
+        $grupo = Grupo::where('ID_GRUPO', $id)
+            ->where('ID_DOCENTE', $docenteId)
+            ->first();
+
+        if (!$grupo) {
+            return response()->json(['message' => 'Grupo no encontrado o no autorizado'], 404);
+        }
+
+        return response()->json($grupo);
+    }
 }

@@ -14,6 +14,7 @@ import HistoriaUsuario from './Pages/HistoriaUsuario';
 import Perfil from "./Pages/Perfil";
 import ApproveAccounts from './Pages/ApproveAccounts';
 import Grupos from './Pages/Grupos';
+import Estudiantes from "./Pages/Estudiantes"; // Importa el nuevo componente
 import '../css/NotFound.css'; // Importa el archivo CSS para la página NotFound
 
 function NotFound() {
@@ -39,6 +40,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/proyectos" element={<Proyectos />} />
         <Route path="/grupos/:projectId" element={<Grupos />} />
+        <Route path="/proyectos/:projectId/grupos/:groupId/estudiantes" element={<Estudiantes />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/proyecto-estudiante" element={<ProyectoEstudiante />} />

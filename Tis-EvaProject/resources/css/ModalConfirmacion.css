@@ -9,6 +9,7 @@
     display: flex;
     justify-content: center;
     align-items: center; /* Alinea verticalmente el modal */
+    z-index: 1000;
 }
 
 .confirm-modal-content {

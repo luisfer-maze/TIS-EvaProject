@@ -9,6 +9,7 @@ use App\Http\Controllers\GrupoController;
 use App\Http\Middleware\CheckAdmin;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\RequerimientoController;
+use App\Http\Controllers\EstudianteController;
 
 // Ruta de login para cargar la aplicación React
 Route::get('/login', function () {
@@ -57,8 +58,15 @@ Route::prefix('api')->middleware(['auth:docente'])->group(function () {
     Route::post('/requerimientos', [RequerimientoController::class, 'store']);
     Route::put('/requerimientos/{id}', [RequerimientoController::class, 'update']); // Ruta de actualización correcta
     Route::delete('/requerimientos/{id}', [RequerimientoController::class, 'destroy']);
+    Route::get('/grupos/{id}', [GrupoController::class, 'show']);
 });
 
+Route::prefix('api')->middleware(['auth:docente'])->group(function () {
+    Route::post('/estudiantes', [EstudianteController::class, 'store']);
+    Route::get('/estudiantes', [EstudianteController::class, 'index']);
+    Route::delete('/estudiantes/{id}', [EstudianteController::class, 'destroy']);
+
+});
 
 // Rutas para actualizar perfil y cambiar contraseña, protegidas por autenticación de docente y estudiante
 Route::middleware('auth:docente,estudiante')->group(function () {

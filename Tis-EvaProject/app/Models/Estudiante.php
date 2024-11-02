@@ -17,7 +17,10 @@ class Estudiante extends Authenticatable
         'APELLIDO_EST',
         'EMAIL_EST',
         'PASSWORD_EST',
+        'ID_GRUPO',
+        'ID_PROYECTO', // Añadir aquí si falta
     ];
+    
 
     protected $hidden = [
         'PASSWORD_EST',

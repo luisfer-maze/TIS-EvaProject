@@ -162,35 +162,39 @@ const Grupos = () => {
         setGroupToDelete(id); // Ahora estableces el ID del grupo, no el índice
         setShowConfirmModal(true); // Muestra el modal de confirmación
     };
-    
+
     const handleDeleteGroup = () => {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
-    
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content");
+
         fetch(`http://localhost:8000/api/grupos/${groupToDelete}`, {
             method: "DELETE",
             headers: {
                 "X-CSRF-TOKEN": csrfToken,
             },
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Error al eliminar el grupo");
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("Grupo eliminado:", data);
-            // Actualizar la lista de grupos en el frontend después de la eliminación
-            const updatedGroups = groups.filter(group => group.ID_GRUPO !== groupToDelete);
-            setGroups(updatedGroups);
-            setShowConfirmModal(false);
-            setGroupToDelete(null);
-        })
-        .catch(error => {
-            console.error("Error al eliminar el grupo:", error);
-        });
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Error al eliminar el grupo");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log("Grupo eliminado:", data);
+                // Actualizar la lista de grupos en el frontend después de la eliminación
+                const updatedGroups = groups.filter(
+                    (group) => group.ID_GRUPO !== groupToDelete
+                );
+                setGroups(updatedGroups);
+                setShowConfirmModal(false);
+                setGroupToDelete(null);
+            })
+            .catch((error) => {
+                console.error("Error al eliminar el grupo:", error);
+            });
     };
-    
+
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         const validTypes = ["image/jpeg", "image/png", "image/jpg"];
@@ -385,7 +389,17 @@ const Grupos = () => {
                             )}
 
                             <div className="project-info">
-                                <h3>{group.NOMBRE_GRUPO}</h3>
+                                <h3
+                                    onClick={() =>
+                                        navigate(
+                                            `/proyectos/${projectId}/grupos/${group.ID_GRUPO}/estudiantes`
+                                        )
+                                    }
+                                    style={{ cursor: "pointer" }}
+                                >
+                                    {group.NOMBRE_GRUPO}
+                                </h3>
+
                                 <p>{group.DESCRIP_GRUPO}</p>
                             </div>
                             <div className="project-actions">
