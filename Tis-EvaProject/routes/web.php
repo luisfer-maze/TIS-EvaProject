@@ -5,10 +5,10 @@ use App\Http\Controllers\ProyectosController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\DocenteAuthController;
 use App\Http\Controllers\Auth\EstudianteAuthController;
-use App\Http\Controllers\Auth\DocentePasswordResetController;
-use App\Http\Controllers\Auth\EstudiantePasswordResetController;
+use App\Http\Controllers\GrupoController;
 use App\Http\Middleware\CheckAdmin;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\RequerimientoController;
 
 // Ruta de login para cargar la aplicación React
 Route::get('/login', function () {
@@ -44,6 +44,21 @@ Route::prefix('api')->middleware(['auth:docente'])->group(function () {
     Route::delete('/proyectos/{id}', [ProyectosController::class, 'destroy']);
     Route::get('/proyectos/{id}', [ProyectosController::class, 'show']);
 });
+
+Route::prefix('api')->middleware(['auth:docente'])->group(function () {
+    Route::get('/proyectos/{projectId}/grupos', [GrupoController::class, 'index']);
+    Route::post('/grupos', [GrupoController::class, 'store']);
+    Route::put('/grupos/{id}', [GrupoController::class, 'update']);
+    Route::delete('/grupos/{id}', [GrupoController::class, 'destroy']);
+});
+
+Route::prefix('api')->middleware(['auth:docente'])->group(function () {
+    Route::get('/proyectos/{projectId}/requerimientos', [RequerimientoController::class, 'index']);
+    Route::post('/requerimientos', [RequerimientoController::class, 'store']);
+    Route::put('/requerimientos/{id}', [RequerimientoController::class, 'update']); // Ruta de actualización correcta
+    Route::delete('/requerimientos/{id}', [RequerimientoController::class, 'destroy']);
+});
+
 
 // Rutas para actualizar perfil y cambiar contraseña, protegidas por autenticación de docente y estudiante
 Route::middleware('auth:docente,estudiante')->group(function () {

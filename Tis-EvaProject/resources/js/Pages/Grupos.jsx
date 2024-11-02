@@ -37,7 +37,7 @@ const Grupos = () => {
         showErrorMessage;
     const [requirements, setRequirements] = useState([]);
     const [projectDetails, setProjectDetails] = useState({});
-
+    const [editedDescription, setEditedDescription] = useState("");
     useEffect(() => {
         // Lógica para cargar los detalles del proyecto
         fetch(`http://localhost:8000/api/proyectos/${projectId}`)
@@ -46,9 +46,27 @@ const Grupos = () => {
                 console.log("Detalles del proyecto:", data);
                 setProjectDetails(data); // Almacena los detalles en el estado
             })
-            .catch((error) => console.error("Error al cargar el proyecto:", error));
+            .catch((error) =>
+                console.error("Error al cargar el proyecto:", error)
+            );
     }, [projectId]);
-    
+
+    useEffect(() => {
+        fetch(`http://localhost:8000/api/proyectos/${projectId}/grupos`)
+            .then((response) => response.json())
+            .then((data) => setGroups(data))
+            .catch((error) =>
+                console.error("Error al cargar los grupos:", error)
+            );
+    }, [projectId]);
+    useEffect(() => {
+        fetch(`http://localhost:8000/api/proyectos/${projectId}/requerimientos`)
+            .then((response) => response.json())
+            .then((data) => setRequirements(data))
+            .catch((error) =>
+                console.error("Error al cargar los requerimientos:", error)
+            );
+    }, [projectId]);
 
     useEffect(() => {
         const docenteId = localStorage.getItem("ID_DOCENTE");
@@ -69,47 +87,110 @@ const Grupos = () => {
             return;
         }
 
-        const newGroup = {
-            NOMBRE_GRUPO: groupName,
-            DESCRIP_GRUPO: groupDescription,
-            PORTADA_GRUPO: image ? URL.createObjectURL(image) : null,
-        };
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute("content");
 
-        const updatedGroups = isEditing
-            ? groups.map((group) => (group === groupToEdit ? newGroup : group))
-            : [...groups, newGroup];
+        const formData = new FormData();
+        formData.append("NOMBRE_GRUPO", groupName);
+        formData.append("DESCRIP_GRUPO", groupDescription);
+        formData.append("ID_PROYECTO", projectId);
 
-        setGroups(updatedGroups);
-        setShowModal(false);
-        setShowCreateSuccessMessage(!isEditing);
-        setShowEditSuccessMessage(isEditing);
+        if (image) {
+            formData.append("PORTADA_GRUPO", image);
+        }
+
+        // Forzar el método PUT mediante el campo _method si está en modo edición
+        if (isEditing) {
+            formData.append("_method", "PUT");
+        }
+
+        const url = isEditing
+            ? `http://localhost:8000/api/grupos/${groupToEdit.ID_GRUPO}`
+            : "http://localhost:8000/api/grupos";
+
+        fetch(url, {
+            method: "POST", // Usamos POST en lugar de PUT
+            headers: {
+                "X-CSRF-TOKEN": csrfToken,
+                Accept: "application/json", // Asegura que Laravel responda en JSON
+            },
+            body: formData,
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then((errorData) => {
+                        throw new Error(
+                            errorData.message || "Error al guardar el grupo"
+                        );
+                    });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                const updatedGroups = isEditing
+                    ? groups.map((group) =>
+                          group.ID_GRUPO === groupToEdit.ID_GRUPO ? data : group
+                      )
+                    : [...groups, data];
+
+                setGroups(updatedGroups);
+                setShowModal(false);
+                setShowCreateSuccessMessage(!isEditing);
+                setShowEditSuccessMessage(isEditing);
+            })
+            .catch((error) => {
+                console.error("Error al guardar el grupo:", error);
+                setErrorMessage(
+                    "Hubo un problema al guardar el grupo. Intente nuevamente."
+                );
+                setShowErrorMessage(true);
+            });
     };
 
     const handleOpenEditModal = (index) => {
         const group = groups[index];
-        setGroupName(group.NOMBRE_GRUPO);
-        setGroupDescription(group.DESCRIP_GRUPO);
+        setGroupName(group.NOMBRE_GRUPO || ""); // Asegura que se establezca el nombre
+        setGroupDescription(group.DESCRIP_GRUPO || "");
         setGroupToEdit(group);
         setImage(null);
         setIsEditing(true);
         setShowModal(true);
     };
 
-    const handleOpenConfirmModal = (index) => {
-        setGroupToDelete(index);
-        setShowConfirmModal(true);
+    const handleOpenConfirmModal = (id) => {
+        setGroupToDelete(id); // Ahora estableces el ID del grupo, no el índice
+        setShowConfirmModal(true); // Muestra el modal de confirmación
     };
-
+    
     const handleDeleteGroup = () => {
-        const updatedGroups = groups.filter(
-            (_, index) => index !== groupToDelete
-        );
-        setGroups(updatedGroups);
-        setShowConfirmModal(false);
-        setGroupToDelete(null);
-        setShowDeleteSuccessMessage(true);
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+    
+        fetch(`http://localhost:8000/api/grupos/${groupToDelete}`, {
+            method: "DELETE",
+            headers: {
+                "X-CSRF-TOKEN": csrfToken,
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Error al eliminar el grupo");
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Grupo eliminado:", data);
+            // Actualizar la lista de grupos en el frontend después de la eliminación
+            const updatedGroups = groups.filter(group => group.ID_GRUPO !== groupToDelete);
+            setGroups(updatedGroups);
+            setShowConfirmModal(false);
+            setGroupToDelete(null);
+        })
+        .catch(error => {
+            console.error("Error al eliminar el grupo:", error);
+        });
     };
-
+    
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         const validTypes = ["image/jpeg", "image/png", "image/jpg"];
@@ -125,31 +206,144 @@ const Grupos = () => {
 
     const getImagePreview = () => {
         if (image) {
-            return URL.createObjectURL(image);
+            return URL.createObjectURL(image); // Muestra la imagen seleccionada en el modal
         }
         if (isEditing && groupToEdit && groupToEdit.PORTADA_GRUPO) {
-            return groupToEdit.PORTADA_GRUPO;
+            return `http://localhost:8000/storage/${groupToEdit.PORTADA_GRUPO}`; // Muestra la imagen existente desde el servidor
         }
         return null;
     };
+
     const handleAddRequirement = () => {
-        setRequirements([...requirements, { description: "" }]);
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content");
+        const newRequirement = {
+            ID_PROYECTO: projectId,
+            DESCRIPCION_REQ: "Descripción del nuevo requerimiento",
+        };
+
+        fetch("http://localhost:8000/api/requerimientos", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken,
+            },
+            body: JSON.stringify(newRequirement),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                setRequirements([...requirements, data]); // Actualiza la lista con el nuevo requerimiento
+            })
+            .catch((error) => {
+                console.error("Error al agregar requerimiento:", error);
+            });
     };
 
-    const handleRequirementChange = (index, value) => {
-        const updatedRequirements = [...requirements];
-        updatedRequirements[index].description = value;
-        setRequirements(updatedRequirements);
+    const fetchRequirements = () => {
+        fetch(`http://localhost:8000/api/proyectos/${projectId}/requerimientos`)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                setRequirements(data); // Asegúrate de que `data` sea un array de requerimientos
+            })
+            .catch((error) => {
+                console.error("Error al cargar los requerimientos:", error);
+            });
     };
 
-    const toggleEditRequirement = (index, isEditing) => {
-        const updatedRequirements = [...requirements];
-        updatedRequirements[index].isEditing = isEditing;
-        setRequirements(updatedRequirements);
+    useEffect(() => {
+        fetchRequirements();
+    }, []);
+    const toggleEditRequirement = (
+        index,
+        isEditing,
+        currentDescription = ""
+    ) => {
+        setRequirements((prevRequirements) =>
+            prevRequirements.map((req, i) =>
+                i === index ? { ...req, isEditing: isEditing } : req
+            )
+        );
+        setEditedDescription(isEditing ? currentDescription : ""); // Inicializar con la descripción actual o limpiar
     };
 
-    const handleDeleteRequirement = (index) => {
-        setRequirements(requirements.filter((_, i) => i !== index));
+    const handleDeleteRequirement = (requirementId) => {
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content");
+
+        fetch(`http://localhost:8000/api/requerimientos/${requirementId}`, {
+            method: "DELETE",
+            headers: {
+                "X-CSRF-TOKEN": csrfToken,
+            },
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Error al eliminar el requerimiento");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log("Requerimiento eliminado:", data);
+                // Actualizar la lista de requerimientos en el estado
+                setRequirements((prevRequirements) =>
+                    prevRequirements.filter(
+                        (req) => req.ID_REQUERIMIENTO !== requirementId
+                    )
+                );
+            })
+            .catch((error) => {
+                console.error("Error al eliminar el requerimiento:", error);
+            });
+    };
+
+    const handleSaveRequirement = (requirement) => {
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content");
+
+        fetch(
+            `http://localhost:8000/api/requerimientos/${requirement.ID_REQUERIMIENTO}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                },
+                body: JSON.stringify({
+                    DESCRIPCION_REQ: editedDescription,
+                }),
+            }
+        )
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Error al actualizar el requerimiento");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                setRequirements((prevRequirements) =>
+                    prevRequirements.map((req) =>
+                        req.ID_REQUERIMIENTO === data.ID_REQUERIMIENTO
+                            ? {
+                                  ...req,
+                                  DESCRIPCION_REQ: data.DESCRIPCION_REQ,
+                                  isEditing: false,
+                              }
+                            : req
+                    )
+                );
+                setEditedDescription(""); // Limpiar el campo después de guardar
+            })
+            .catch((error) => {
+                console.error("Error al actualizar el requerimiento:", error);
+            });
     };
 
     return (
@@ -178,7 +372,7 @@ const Grupos = () => {
                         <div key={index} className="project-item">
                             {group.PORTADA_GRUPO ? (
                                 <img
-                                    src={group.PORTADA_GRUPO}
+                                    src={`http://localhost:8000/storage/${group.PORTADA_GRUPO}`}
                                     alt="Icono del grupo"
                                     width="50"
                                     height="50"
@@ -189,6 +383,7 @@ const Grupos = () => {
                                     alt="Icono del grupo"
                                 />
                             )}
+
                             <div className="project-info">
                                 <h3>{group.NOMBRE_GRUPO}</h3>
                                 <p>{group.DESCRIP_GRUPO}</p>
@@ -203,7 +398,7 @@ const Grupos = () => {
                                 <button
                                     className="action-btn"
                                     onClick={() =>
-                                        handleOpenConfirmModal(index)
+                                        handleOpenConfirmModal(group.ID_GRUPO)
                                     }
                                 >
                                     <i className="fas fa-trash"></i>
@@ -226,16 +421,19 @@ const Grupos = () => {
                 <div className="project-list requerimientos-list">
                     {requirements.map((requirement, index) => (
                         <div
-                            key={index}
+                            key={requirement.ID_REQUERIMIENTO}
                             className="project-item requerimientos-list"
                         >
                             {requirement.isEditing ? (
                                 <ReactQuill
                                     theme="snow"
-                                    value={requirement.description}
+                                    value={
+                                        editedDescription ||
+                                        requirement.DESCRIPCION_REQ
+                                    } // Mostrar la descripción actual al entrar en modo edición
                                     onChange={(value) =>
-                                        handleRequirementChange(index, value)
-                                    }
+                                        setEditedDescription(value)
+                                    } // Actualizar editedDescription cuando el usuario edite
                                     className="requirement-quill-editor"
                                     placeholder="Descripción del requerimiento"
                                     style={{ width: "100%" }}
@@ -252,7 +450,7 @@ const Grupos = () => {
                                             className="requirement-description"
                                             dangerouslySetInnerHTML={{
                                                 __html:
-                                                    requirement.description ||
+                                                    requirement.DESCRIPCION_REQ ||
                                                     "Descripción del requerimiento",
                                             }}
                                         ></span>
@@ -263,10 +461,13 @@ const Grupos = () => {
                                 <button
                                     className="action-btn"
                                     onClick={() =>
-                                        toggleEditRequirement(
-                                            index,
-                                            !requirement.isEditing
-                                        )
+                                        requirement.isEditing
+                                            ? handleSaveRequirement(requirement)
+                                            : toggleEditRequirement(
+                                                  index,
+                                                  true,
+                                                  requirement.DESCRIPCION_REQ
+                                              )
                                     }
                                 >
                                     <i
@@ -280,7 +481,9 @@ const Grupos = () => {
                                 <button
                                     className="action-btn"
                                     onClick={() =>
-                                        handleDeleteRequirement(index)
+                                        handleDeleteRequirement(
+                                            requirement.ID_REQUERIMIENTO
+                                        )
                                     }
                                 >
                                     <i className="fas fa-trash"></i>
