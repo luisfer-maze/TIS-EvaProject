@@ -15,8 +15,11 @@ class Requerimiento extends Model
 
     protected $fillable = [
         'ID_PROYECTO',
-        'DESCRIPCION_REQ'
+        'ID_GRUPO',
+        'DESCRIPCION_REQ',
+        'creado_por'
     ];
+    
 
     public function proyecto()
     {

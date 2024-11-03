@@ -253,13 +253,21 @@ const Grupos = () => {
                 return response.json();
             })
             .then((data) => {
-                setRequirements(data); // Asegúrate de que `data` sea un array de requerimientos
+                console.log("Requerimientos recibidos desde la API:", data);
+                
+                // Combina requerimientosProyecto y requerimientosGrupo en un solo array
+                const allRequirements = [
+                    ...(data.requerimientosProyecto || []),
+                    ...(data.requerimientosGrupo || [])
+                ];
+                
+                setRequirements(allRequirements); // Asigna el array combinado al estado
             })
             .catch((error) => {
                 console.error("Error al cargar los requerimientos:", error);
             });
     };
-
+    
     useEffect(() => {
         fetchRequirements();
     }, []);
@@ -433,78 +441,76 @@ const Grupos = () => {
                 </div>
 
                 <div className="project-list requerimientos-list">
-                    {requirements.map((requirement, index) => (
-                        <div
-                            key={requirement.ID_REQUERIMIENTO}
-                            className="project-item requerimientos-list"
-                        >
-                            {requirement.isEditing ? (
-                                <ReactQuill
-                                    theme="snow"
-                                    value={
-                                        editedDescription ||
-                                        requirement.DESCRIPCION_REQ
-                                    } // Mostrar la descripción actual al entrar en modo edición
-                                    onChange={(value) =>
-                                        setEditedDescription(value)
-                                    } // Actualizar editedDescription cuando el usuario edite
-                                    className="requirement-quill-editor"
-                                    placeholder="Descripción del requerimiento"
-                                    style={{ width: "100%" }}
-                                />
-                            ) : (
-                                <div className="project-info requerimientos-list">
-                                    <div className="requirement-number-container">
-                                        <span className="requirement-number">{`${
-                                            index + 1
-                                        }.`}</span>
-                                    </div>
-                                    <div className="requirement-text-container">
-                                        <span
-                                            className="requirement-description"
-                                            dangerouslySetInnerHTML={{
-                                                __html:
-                                                    requirement.DESCRIPCION_REQ ||
-                                                    "Descripción del requerimiento",
-                                            }}
-                                        ></span>
-                                    </div>
-                                </div>
-                            )}
-                            <div className="project-actions requerimientos-list">
-                                <button
-                                    className="action-btn"
-                                    onClick={() =>
-                                        requirement.isEditing
-                                            ? handleSaveRequirement(requirement)
-                                            : toggleEditRequirement(
-                                                  index,
-                                                  true,
-                                                  requirement.DESCRIPCION_REQ
-                                              )
-                                    }
-                                >
-                                    <i
-                                        className={
-                                            requirement.isEditing
-                                                ? "fas fa-save"
-                                                : "fas fa-pen"
+                    {Array.isArray(requirements) &&
+                        requirements.map((requirement, index) => (
+                            <div
+                                key={requirement.ID_REQUERIMIENTO}
+                                className="project-item requerimientos-list"
+                            >
+                                {requirement.isEditing ? (
+                                    <ReactQuill
+                                        theme="snow"
+                                        value={
+                                            editedDescription ||
+                                            requirement.DESCRIPCION_REQ
                                         }
-                                    ></i>
-                                </button>
-                                <button
-                                    className="action-btn"
-                                    onClick={() =>
-                                        handleDeleteRequirement(
-                                            requirement.ID_REQUERIMIENTO
-                                        )
-                                    }
-                                >
-                                    <i className="fas fa-trash"></i>
-                                </button>
+                                        onChange={(value) =>
+                                            setEditedDescription(value)
+                                        }
+                                        className="requirement-quill-editor"
+                                        placeholder="Descripción del requerimiento"
+                                        style={{ width: "100%" }}
+                                    />
+                                ) : (
+                                    <div className="project-info requerimientos-list">
+                                        <div className="requirement-text-container">
+                                            <span
+                                                className="requirement-description"
+                                                dangerouslySetInnerHTML={{
+                                                    __html:
+                                                        requirement.DESCRIPCION_REQ ||
+                                                        "Descripción del requerimiento",
+                                                }}
+                                            ></span>
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="project-actions requerimientos-list">
+                                    <button
+                                        className="action-btn"
+                                        onClick={() =>
+                                            requirement.isEditing
+                                                ? handleSaveRequirement(
+                                                      requirement
+                                                  )
+                                                : toggleEditRequirement(
+                                                      index,
+                                                      true,
+                                                      requirement.DESCRIPCION_REQ
+                                                  )
+                                        }
+                                    >
+                                        <i
+                                            className={
+                                                requirement.isEditing
+                                                    ? "fas fa-save"
+                                                    : "fas fa-pen"
+                                            }
+                                        ></i>
+                                    </button>
+                                    <button
+                                        className="action-btn"
+                                        onClick={() =>
+                                            handleDeleteRequirement(
+                                                requirement.ID_REQUERIMIENTO
+                                            )
+                                        }
+                                    >
+                                        <i className="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
                 </div>
             </div>
 

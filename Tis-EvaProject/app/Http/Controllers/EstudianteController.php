@@ -76,19 +76,23 @@ class EstudianteController extends Controller
     public function obtenerProyectoYGrupo(Request $request)
     {
         try {
-            // Verifica que el usuario esté autenticado
-            $estudianteId = $request->user()->id; // Esto arroja un error si el usuario no está autenticado
+            $estudianteId = $request->user()->ID_EST;
 
-            // Buscar el estudiante junto con su proyecto y grupo
-            $estudiante = Estudiante::with(['proyecto', 'grupo'])->find($estudianteId);
+            // Obtener el estudiante con su proyecto, requerimientos del proyecto y grupo (junto con requerimientos del grupo)
+            $estudiante = Estudiante::with(['proyecto.requerimientos', 'grupo.requerimientos'])->find($estudianteId);
 
             if (!$estudiante) {
                 return response()->json(['message' => 'Estudiante no encontrado'], 404);
             }
 
+            // Combina los requerimientos del proyecto (docente) y del grupo (estudiante)
+            $requerimientosDocente = $estudiante->proyecto->requerimientos ?? [];
+            $requerimientosEstudiante = $estudiante->grupo->requerimientos ?? [];
+
             return response()->json([
                 'proyecto' => $estudiante->proyecto,
                 'grupo' => $estudiante->grupo,
+                'requerimientos' => array_merge($requerimientosDocente->toArray(), $requerimientosEstudiante->toArray())
             ]);
         } catch (\Exception $e) {
             Log::error("Error al obtener proyecto y grupo: " . $e->getMessage());

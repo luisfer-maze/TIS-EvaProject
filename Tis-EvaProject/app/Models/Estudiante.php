@@ -18,28 +18,32 @@ class Estudiante extends Authenticatable
         'EMAIL_EST',
         'PASSWORD_EST',
         'ID_GRUPO',
-        'ID_PROYECTO', // Añadir aquí si falta
+        'ID_PROYECTO',
     ];
-
 
     protected $hidden = [
         'PASSWORD_EST',
     ];
 
+    // Método para obtener la contraseña de autenticación
     public function getAuthPassword()
     {
         return $this->PASSWORD_EST;
     }
 
+    // Método para enviar notificación de restablecimiento de contraseña
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ResetPasswordNotification($token));
     }
+
+    // Relación con el modelo Proyecto
     public function proyecto()
     {
         return $this->belongsTo(Proyectos::class, 'ID_PROYECTO', 'ID_PROYECTO');
     }
 
+    // Relación con el modelo Grupo
     public function grupo()
     {
         return $this->belongsTo(Grupo::class, 'ID_GRUPO', 'ID_GRUPO');
