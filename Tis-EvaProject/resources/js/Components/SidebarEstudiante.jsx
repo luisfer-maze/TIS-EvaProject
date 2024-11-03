@@ -38,7 +38,11 @@ const SidebarEstudiante = ({ isSidebarCollapsed, toggleSidebar, nombreProyecto, 
             </ul>
             <hr className="divisor-side" />
             <button className="sidebar-collapse" onClick={toggleSidebar}>
-                <i className={`fas ${isSidebarCollapsed ? "fa-angle-right" : "fa-angle-left"}`}></i>
+                <span className="sidebar-circle" aria-hidden="true">
+                    <span className="sidebar-icon sidebar-prueba-arrow">
+                        <i className={`fas ${isSidebarCollapsed ? "fa-angle-right" : "fa-angle-left"}`}></i>
+                    </span>
+                </span>
             </button>
         </aside>
     );

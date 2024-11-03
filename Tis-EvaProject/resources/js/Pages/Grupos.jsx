@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import HeaderProyecto from "../Components/HeaderProyecto";
 import SidebarPrueba from "../Components/SidebarPrueba";
-import axios from "axios";
 import "../../css/Proyectos.css"; // Reutiliza el CSS de Proyectos
 import "../../css/Grupos.css"; // Reutiliza el CSS de Proyectos
-import "../../css/SidebarEstudiante.css";
+import "../../css/HeaderProyecto.css";
+import "../../css/SidebarPrueba.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import ModalConfirmacion from "../Components/ModalConfirmacion";
 import ModalMensajeExito from "../Components/ModalMensajeExito";
@@ -379,6 +379,9 @@ const Grupos = () => {
                 <SidebarPrueba
                     isSidebarCollapsed={isSidebarCollapsed}
                     toggleSidebar={toggleSidebar}
+                    nombreProyecto={projectDetails?.NOMBRE_PROYECTO}
+                    fotoProyecto={`http://localhost:8000/storage/${projectDetails?.PORTADA_PROYECTO}`}
+                    projectId={projectId}
                 />
     
                 {/* Contenedor del contenido principal */}
@@ -386,7 +389,7 @@ const Grupos = () => {
                     
                     {/* Sección de "Mis grupos" */}
                     <div className="projects-header">
-                        <h2>Mis grupos</h2>
+                        <h2>Grupos</h2>
                         <button
                             className="new-project-btn"
                             onClick={() => {

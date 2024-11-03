@@ -206,7 +206,7 @@ const Proyectos = () => {
 
             <div className={`container ${isModalOpen ? "disabled" : ""}`}>
                 <div className="projects-header">
-                    <h2>Mis proyectos</h2>
+                    <h2>Proyectos</h2>
                     <button
                         className="new-project-btn"
                         onClick={() => {
