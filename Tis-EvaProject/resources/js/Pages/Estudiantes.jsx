@@ -254,12 +254,17 @@ const Estudiantes = () => {
                         {students.map((student, index) => (
                             <div key={index} className="project-item">
                                 <img
-                                    src="https://via.placeholder.com/50"
+                                    src={
+                                        student.FOTO_EST
+                                            ? `http://localhost:8000/storage/${student.FOTO_EST}`
+                                            : "https://via.placeholder.com/50"
+                                    }
                                     alt="Foto del estudiante"
                                     className="student-photo"
                                     width="50"
                                     height="50"
                                 />
+
                                 <div className="project-info">
                                     <h3>
                                         {`${student.NOMBRE_EST || ""} ${
@@ -354,7 +359,7 @@ const Estudiantes = () => {
                     message="¿Está seguro de que desea eliminar este estudiante?"
                 />
             )}
-            
+
             {showDeleteSuccessMessage && (
                 <ModalMensajeExito
                     message="¡Se eliminó el estudiante correctamente!"
