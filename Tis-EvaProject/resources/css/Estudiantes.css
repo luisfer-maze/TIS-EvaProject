@@ -1,4 +1,16 @@
 /* Estilo de la superposición para el modal de estudiantes */
+.estudiantes-page {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+.estudiantes-layout {
+    display: flex;
+    flex-grow: 1; /* Permite que el layout ocupe el espacio vertical restante */
+}
+.estudiantes-content {
+    flex-grow: 1; /* Ocupa el espacio restante junto al sidebar */
+}
 .estudiantes-modal-overlay {
     position: fixed;
     top: 0;
@@ -29,7 +41,6 @@
     font-size: 20px;
     color: #333;
 }
-
 
 .estudiantes-input-field {
     width: 100%;
@@ -64,14 +75,12 @@
     background-color: black;
 }
 
-
 .group-image {
     width: 150px;
     height: 150px;
     border-radius: 8px;
     margin-right: 30px;
 }
-
 
 .estudiantes-container .container {
     padding: 40px;

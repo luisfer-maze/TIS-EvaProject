@@ -25,15 +25,15 @@ const SidebarEstudiante = ({ isSidebarCollapsed, toggleSidebar, nombreProyecto, 
             <ul className="sidebar-menu">
                 <li className="menu-item" onClick={() => navigate('/planificacion-estudiante')}>
                     <i className="fas fa-tasks icon-menu"></i>
-                    <span className="menu-text">Backlog</span>
+                    <span className="menu-text">1</span>
                 </li>
                 <li className="menu-item" onClick={() => navigate('/equipo-estudiante')}>
                     <i className="fas fa-users icon-menu"></i>
-                    <span className="menu-text">Equipo</span>
+                    <span className="menu-text">2</span>
                 </li>
                 <li className="menu-item" onClick={() => navigate('/tareas-estudiante')}>
                     <i className="fas fa-book-open icon-menu"></i>
-                    <span className="menu-text">Tareas</span>
+                    <span className="menu-text">3</span>
                 </li>
             </ul>
             <hr className="divisor-side" />

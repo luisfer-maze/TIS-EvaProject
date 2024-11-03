@@ -1,4 +1,13 @@
 /* Aplica el ancho completo al editor específico para requerimientos */
+.grupos-container {
+  height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+.grupos-sidebar-content {
+  display: flex;
+  height: 100%;
+}
 .requerimientos-list .project-item {
     display: flex;
     align-items: center;

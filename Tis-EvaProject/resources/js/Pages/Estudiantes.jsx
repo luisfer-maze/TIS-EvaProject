@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import HeaderProyecto from "../Components/HeaderProyecto";
+import SidebarEstudiante from "../Components/SidebarEstudiante";
+import axios from "axios";
 import "../../css/Proyectos.css";
 import "../../css/Estudiantes.css";
 import "../../css/HeaderProyecto.css";
 import "../../css/Loader.css";
+import "../../css/SidebarEstudiante.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import ModalConfirmacion from "../Components/ModalConfirmacion";
 import ModalMensajeExito from "../Components/ModalMensajeExito";
@@ -31,6 +34,8 @@ const Estudiantes = () => {
     const [studentEmail, setStudentEmail] = useState("");
     const [studentToEdit, setStudentToEdit] = useState(null);
     const [projectDetails, setProjectDetails] = useState({});
+    const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const toggleSidebar = () => setSidebarCollapsed(!isSidebarCollapsed);
     useEffect(() => {
         // Lógica para cargar los detalles del proyecto
         fetch(`http://localhost:8000/api/proyectos/${projectId}`)
@@ -225,192 +230,188 @@ const Estudiantes = () => {
     };
 
     return (
-        <div>
+        <div className="estudiantes-page">
+            {/* Header */}
             <HeaderProyecto />
-            {groupInfo && (
-                <div className="group-info-section">
-                    <img
-                        src={
-                            groupInfo.PORTADA_GRUPO
-                                ? `http://localhost:8000/storage/${groupInfo.PORTADA_GRUPO}` // Asegúrate de tener la ruta correcta
-                                : "https://via.placeholder.com/150"
-                        }
-                        alt="Icono del grupo"
-                        className="group-image"
-                    />
-                    <div className="group-info-text">
-                        <h2 className="group-title">
-                            {groupInfo.NOMBRE_GRUPO}
-                        </h2>
-                        <p className="group-description">
-                            {groupInfo.DESCRIP_GRUPO ||
-                                "Descripción no disponible"}
-                        </p>
+    
+            {/* Contenedor principal con sidebar y contenido */}
+            <div className="estudiantes-layout">
+                {/* Sidebar */}
+                <SidebarEstudiante
+                    isSidebarCollapsed={isSidebarCollapsed}
+                    toggleSidebar={toggleSidebar}
+                />
+    
+                {/* Contenido principal */}
+                <div className="estudiantes-content">
+                    {groupInfo && (
+                        <div className="group-info-section">
+                            <img
+                                src={
+                                    groupInfo.PORTADA_GRUPO
+                                        ? `http://localhost:8000/storage/${groupInfo.PORTADA_GRUPO}`
+                                        : "https://via.placeholder.com/150"
+                                }
+                                alt="Icono del grupo"
+                                className="group-image"
+                            />
+                            <div className="group-info-text">
+                                <h2 className="group-title">
+                                    {groupInfo.NOMBRE_GRUPO}
+                                </h2>
+                                <p className="group-description">
+                                    {groupInfo.DESCRIP_GRUPO || "Descripción no disponible"}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+    
+                    <div className="divisor-container">
+                        <div className="divisor-est"></div>
                     </div>
-                </div>
-            )}
-
-            <div className="divisor-container">
-                <div className="divisor-est"></div>
-            </div>
-            <div className="estudiantes-container">
-                <div className="container">
-                    <div className="projects-header">
-                        <h2>Estudiantes</h2>
-                        <button
-                            className="new-project-btn"
-                            onClick={() => handleOpenModal()}
-                        >
-                            <i className="fas fa-plus"></i> Añadir estudiante
-                        </button>
+    
+                    <div className="estudiantes-container">
+                        <div className="container">
+                            <div className="projects-header">
+                                <h2>Estudiantes</h2>
+                                <button
+                                    className="new-project-btn"
+                                    onClick={() => handleOpenModal()}
+                                >
+                                    <i className="fas fa-plus"></i> Añadir estudiante
+                                </button>
+                            </div>
+    
+                            <div className="project-list">
+                                {students.map((student, index) => (
+                                    <div key={index} className="project-item">
+                                        <img
+                                            src={
+                                                student.FOTO_EST
+                                                    ? `http://localhost:8000/storage/${student.FOTO_EST}`
+                                                    : "https://via.placeholder.com/50"
+                                            }
+                                            alt="Foto del estudiante"
+                                            className="student-photo"
+                                            width="50"
+                                            height="50"
+                                        />
+    
+                                        <div className="project-info">
+                                            <h3>
+                                                {`${student.NOMBRE_EST || ""} ${student.APELLIDO_EST || ""}`.trim()}
+                                            </h3>
+                                            <p>{student.EMAIL_EST}</p>
+                                        </div>
+                                        <div className="project-actions">
+                                            <button
+                                                className="action-btn"
+                                                onClick={() => handleOpenConfirmModal(index)}
+                                            >
+                                                <i className="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-
-                    <div className="project-list">
-                        {students.map((student, index) => (
-                            <div key={index} className="project-item">
-                                <img
-                                    src={
-                                        student.FOTO_EST
-                                            ? `http://localhost:8000/storage/${student.FOTO_EST}`
-                                            : "https://via.placeholder.com/50"
-                                    }
-                                    alt="Foto del estudiante"
-                                    className="student-photo"
-                                    width="50"
-                                    height="50"
-                                />
-
-                                <div className="project-info">
-                                    <h3>
-                                        {`${student.NOMBRE_EST || ""} ${
-                                            student.APELLIDO_EST || ""
-                                        }`.trim()}
-                                    </h3>
-                                    <p>{student.EMAIL_EST}</p>
+    
+                    {/* Modales para agregar, editar y eliminar estudiantes */}
+                    {showModal && (
+                        <>
+                            <div
+                                className="estudiantes-modal-overlay"
+                                onClick={handleCloseModal}
+                            ></div>
+                            <div
+                                className="estudiantes-modal-content"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <h3 className="estudiantes-modal-header">
+                                    {isEditing ? "Editar Estudiante" : "Añadir Estudiante"}
+                                </h3>
+                                <div className="estudiantes-form-content">
+                                    <input
+                                        type="text"
+                                        value={studentName}
+                                        onChange={(e) => setStudentName(e.target.value)}
+                                        placeholder="Nombre del estudiante*"
+                                        className="estudiantes-input-field"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={studentLastName}
+                                        onChange={(e) => setStudentLastName(e.target.value)}
+                                        placeholder="Apellido del estudiante"
+                                        className="estudiantes-input-field"
+                                    />
+                                    <input
+                                        type="email"
+                                        value={studentEmail}
+                                        onChange={(e) => setStudentEmail(e.target.value)}
+                                        placeholder="Correo del estudiante*"
+                                        className="estudiantes-input-field"
+                                    />
                                 </div>
-                                <div className="project-actions">
-                                    <button
-                                        className="action-btn"
-                                        onClick={() =>
-                                            handleOpenConfirmModal(index)
-                                        }
-                                    >
-                                        <i className="fas fa-trash"></i>
+                                <div className="modal-actions">
+                                    <button onClick={handleCloseModal} className="cancel-btn">
+                                        Cancelar
                                     </button>
+                                    {isLoading ? (
+                                        <div className="loader"></div> 
+                                    ) : (
+                                        <button onClick={handleSaveStudent} className="create-btn">
+                                            {isEditing ? "Guardar cambios" : "Añadir"}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-            {/* Modal para agregar o editar estudiante */}
-            {showModal && (
-                <>
-                    <div
-                        className="estudiantes-modal-overlay"
-                        onClick={handleCloseModal}
-                    ></div>
-                    <div
-                        className="estudiantes-modal-content"
-                        onClick={(e) => e.stopPropagation()} // Detener propagación de clic
-                    >
-                        <h3 className="estudiantes-modal-header">
-                            {isEditing
-                                ? "Editar Estudiante"
-                                : "Añadir Estudiante"}
-                        </h3>
-                        <div className="estudiantes-form-content">
-                            <input
-                                type="text"
-                                value={studentName}
-                                onChange={(e) => setStudentName(e.target.value)}
-                                placeholder="Nombre del estudiante*"
-                                className="estudiantes-input-field"
-                            />
-                            <input
-                                type="text"
-                                value={studentLastName}
-                                onChange={(e) =>
-                                    setStudentLastName(e.target.value)
-                                }
-                                placeholder="Apellido del estudiante"
-                                className="estudiantes-input-field"
-                            />
-                            <input
-                                type="email"
-                                value={studentEmail}
-                                onChange={(e) =>
-                                    setStudentEmail(e.target.value)
-                                }
-                                placeholder="Correo del estudiante*"
-                                className="estudiantes-input-field"
-                            />
-                        </div>
-                        <div className="modal-actions">
-                            <button
-                                onClick={handleCloseModal}
-                                className="cancel-btn"
-                            >
-                                Cancelar
-                            </button>
-                            {isLoading ? (
-                                <div className="loader"></div> // Mostrar el loader si isLoading es true
-                            ) : (
-                                <button
-                                    onClick={handleSaveStudent}
-                                    className="create-btn"
-                                >
-                                    {isEditing ? "Guardar cambios" : "Añadir"}
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </>
-            )}
-
-            {/* Modal de confirmación de eliminación */}
-            {showConfirmModal && (
-                <ModalConfirmacion
-                    show={showConfirmModal}
-                    onClose={() => setShowConfirmModal(false)}
-                    onConfirm={handleDeleteStudent}
-                    title="Confirmar eliminación"
-                    message="¿Está seguro de que desea eliminar a este estudiante?"
-                />
-            )}
-
-            {showDeleteSuccessMessage && (
-                <ModalMensajeExito
-                    message="¡Se eliminó al estudiante correctamente!"
-                    onClose={() => setShowDeleteSuccessMessage(false)}
-                />
-            )}
-
-            {/* Mensaje de éxito para creación */}
-            {showCreateSuccessMessage && (
-                <ModalMensajeExito
-                    message="¡Se agrego al estudiante exitosamente!"
-                    onClose={() => setShowCreateSuccessMessage(false)}
-                />
-            )}
-
-            {/* Mensaje de éxito para edición */}
-            {showEditSuccessMessage && (
-                <ModalMensajeExito
-                    message="¡Se guardaron los cambios exitosamente!"
-                    onClose={() => setShowEditSuccessMessage(false)}
-                />
-            )}
-
-            {/* Modal de error */}
-            {showErrorMessage && (
-                <ModalError
-                    errorMessage="Por favor, complete todos los campos obligatorios."
-                    closeModal={() => setShowErrorMessage(false)}
-                />
-            )}
+                        </>
+                    )}
+    
+                    {showConfirmModal && (
+                        <ModalConfirmacion
+                            show={showConfirmModal}
+                            onClose={() => setShowConfirmModal(false)}
+                            onConfirm={handleDeleteStudent}
+                            title="Confirmar eliminación"
+                            message="¿Está seguro de que desea eliminar a este estudiante?"
+                        />
+                    )}
+    
+                    {showDeleteSuccessMessage && (
+                        <ModalMensajeExito
+                            message="¡Se eliminó al estudiante correctamente!"
+                            onClose={() => setShowDeleteSuccessMessage(false)}
+                        />
+                    )}
+    
+                    {showCreateSuccessMessage && (
+                        <ModalMensajeExito
+                            message="¡Se agregó al estudiante exitosamente!"
+                            onClose={() => setShowCreateSuccessMessage(false)}
+                        />
+                    )}
+    
+                    {showEditSuccessMessage && (
+                        <ModalMensajeExito
+                            message="¡Se guardaron los cambios exitosamente!"
+                            onClose={() => setShowEditSuccessMessage(false)}
+                        />
+                    )}
+    
+                    {showErrorMessage && (
+                        <ModalError
+                            errorMessage="Por favor, complete todos los campos obligatorios."
+                            closeModal={() => setShowErrorMessage(false)}
+                        />
+                    )}
+                </div> {/* Fin de estudiantes-content */}
+            </div> {/* Fin de estudiantes-layout */}
         </div>
     );
+    
 };
 
 export default Estudiantes;

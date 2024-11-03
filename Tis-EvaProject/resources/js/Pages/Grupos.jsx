@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import HeaderProyecto from "../Components/HeaderProyecto";
+import SidebarPrueba from "../Components/SidebarPrueba";
+import axios from "axios";
 import "../../css/Proyectos.css"; // Reutiliza el CSS de Proyectos
 import "../../css/Grupos.css"; // Reutiliza el CSS de Proyectos
+import "../../css/SidebarEstudiante.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import ModalConfirmacion from "../Components/ModalConfirmacion";
 import ModalMensajeExito from "../Components/ModalMensajeExito";
@@ -39,6 +42,8 @@ const Grupos = () => {
     const [requirements, setRequirements] = useState([]);
     const [projectDetails, setProjectDetails] = useState({});
     const [editedDescription, setEditedDescription] = useState("");
+    const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const toggleSidebar = () => setSidebarCollapsed(!isSidebarCollapsed);
     useEffect(() => {
         // Lógica para cargar los detalles del proyecto
         fetch(`http://localhost:8000/api/proyectos/${projectId}`)
@@ -256,20 +261,20 @@ const Grupos = () => {
             })
             .then((data) => {
                 console.log("Requerimientos recibidos desde la API:", data);
-                
+
                 // Combina requerimientosProyecto y requerimientosGrupo en un solo array
                 const allRequirements = [
                     ...(data.requerimientosProyecto || []),
-                    ...(data.requerimientosGrupo || [])
+                    ...(data.requerimientosGrupo || []),
                 ];
-                
+
                 setRequirements(allRequirements); // Asigna el array combinado al estado
             })
             .catch((error) => {
                 console.error("Error al cargar los requerimientos:", error);
             });
     };
-    
+
     useEffect(() => {
         fetchRequirements();
     }, []);
@@ -361,168 +366,169 @@ const Grupos = () => {
     };
 
     return (
-        <div>
+        <div
+            className={`grupos-container ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}
+        >
+            {/* Header */}
             <HeaderProyecto isModalOpen={isModalOpen} />
-            <div className={`container ${isModalOpen ? "disabled" : ""}`}>
-                <div className="projects-header">
-                    <h2>Mis grupos</h2>
-                    <button
-                        className="new-project-btn"
-                        onClick={() => {
-                            setIsEditing(false);
-                            setShowModal(true);
-                            setGroupName("");
-                            setGroupDescription("");
-                            setImage(null);
-                        }}
-                        disabled={isModalOpen}
-                    >
-                        <i className="fas fa-plus"></i> Nuevo grupo
-                    </button>
-                </div>
-
-                <div className="project-list">
-                    {groups.map((group, index) => (
-                        <div key={index} className="project-item">
-                            {group.PORTADA_GRUPO ? (
-                                <img
-                                    src={`http://localhost:8000/storage/${group.PORTADA_GRUPO}`}
-                                    alt="Icono del grupo"
-                                    width="50"
-                                    height="50"
-                                />
-                            ) : (
-                                <img
-                                    src="https://via.placeholder.com/50"
-                                    alt="Icono del grupo"
-                                />
-                            )}
-
-                            <div className="project-info">
-                                <h3
-                                    onClick={() =>
-                                        navigate(
-                                            `/proyectos/${projectId}/grupos/${group.ID_GRUPO}/estudiantes`
-                                        )
-                                    }
-                                    style={{ cursor: "pointer" }}
-                                >
-                                    {group.NOMBRE_GRUPO}
-                                </h3>
-
-                                <p>{group.DESCRIP_GRUPO}</p>
-                            </div>
-                            <div className="project-actions">
-                                <button
-                                    className="action-btn"
-                                    onClick={() => handleOpenEditModal(index)}
-                                >
-                                    <i className="fas fa-pen"></i>
-                                </button>
-                                <button
-                                    className="action-btn"
-                                    onClick={() =>
-                                        handleOpenConfirmModal(group.ID_GRUPO)
-                                    }
-                                >
-                                    <i className="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                <div className="projects-header">
-                    <h2>Requerimientos</h2>
-                    <button
-                        className="new-project-btn"
-                        onClick={handleAddRequirement}
-                        disabled={isModalOpen}
-                    >
-                        <i className="fas fa-plus"></i> Nuevo requerimiento
-                    </button>
-                </div>
-
-                <div className="project-list requerimientos-list">
-                    {Array.isArray(requirements) &&
-                        requirements.map((requirement, index) => (
-                            <div
-                                key={requirement.ID_REQUERIMIENTO}
-                                className="project-item requerimientos-list"
-                            >
-                                {requirement.isEditing ? (
-                                    <ReactQuill
-                                        theme="snow"
-                                        value={
-                                            editedDescription ||
-                                            requirement.DESCRIPCION_REQ
-                                        }
-                                        onChange={(value) =>
-                                            setEditedDescription(value)
-                                        }
-                                        className="requirement-quill-editor"
-                                        placeholder="Descripción del requerimiento"
-                                        style={{ width: "100%" }}
+    
+            {/* Contenedor principal que contiene el sidebar y el contenido */}
+            <div className="grupos-sidebar-content">
+                
+                {/* Sidebar */}
+                <SidebarPrueba
+                    isSidebarCollapsed={isSidebarCollapsed}
+                    toggleSidebar={toggleSidebar}
+                />
+    
+                {/* Contenedor del contenido principal */}
+                <div className={`container ${isModalOpen ? "disabled" : ""}`}>
+                    
+                    {/* Sección de "Mis grupos" */}
+                    <div className="projects-header">
+                        <h2>Mis grupos</h2>
+                        <button
+                            className="new-project-btn"
+                            onClick={() => {
+                                setIsEditing(false);
+                                setShowModal(true);
+                                setGroupName("");
+                                setGroupDescription("");
+                                setImage(null);
+                            }}
+                            disabled={isModalOpen}
+                        >
+                            <i className="fas fa-plus"></i> Nuevo grupo
+                        </button>
+                    </div>
+    
+                    {/* Lista de grupos */}
+                    <div className="project-list">
+                        {groups.map((group, index) => (
+                            <div key={index} className="project-item">
+                                {group.PORTADA_GRUPO ? (
+                                    <img
+                                        src={`http://localhost:8000/storage/${group.PORTADA_GRUPO}`}
+                                        alt="Icono del grupo"
+                                        width="50"
+                                        height="50"
                                     />
                                 ) : (
-                                    <div className="project-info requerimientos-list">
-                                        <div className="requirement-text-container">
-                                            <span
-                                                className="requirement-description"
-                                                dangerouslySetInnerHTML={{
-                                                    __html:
-                                                        requirement.DESCRIPCION_REQ ||
-                                                        "Descripción del requerimiento",
-                                                }}
-                                            ></span>
-                                        </div>
-                                    </div>
+                                    <img
+                                        src="https://via.placeholder.com/50"
+                                        alt="Icono del grupo"
+                                    />
                                 )}
-                                <div className="project-actions requerimientos-list">
+    
+                                <div className="project-info">
+                                    <h3
+                                        onClick={() =>
+                                            navigate(
+                                                `/proyectos/${projectId}/grupos/${group.ID_GRUPO}/estudiantes`
+                                            )
+                                        }
+                                        style={{ cursor: "pointer" }}
+                                    >
+                                        {group.NOMBRE_GRUPO}
+                                    </h3>
+                                    <p>{group.DESCRIP_GRUPO}</p>
+                                </div>
+    
+                                <div className="project-actions">
                                     <button
                                         className="action-btn"
-                                        onClick={() =>
-                                            requirement.isEditing
-                                                ? handleSaveRequirement(
-                                                      requirement
-                                                  )
-                                                : toggleEditRequirement(
-                                                      index,
-                                                      true,
-                                                      requirement.DESCRIPCION_REQ
-                                                  )
-                                        }
+                                        onClick={() => handleOpenEditModal(index)}
                                     >
-                                        <i
-                                            className={
-                                                requirement.isEditing
-                                                    ? "fas fa-save"
-                                                    : "fas fa-pen"
-                                            }
-                                        ></i>
+                                        <i className="fas fa-pen"></i>
                                     </button>
                                     <button
                                         className="action-btn"
-                                        onClick={() =>
-                                            handleDeleteRequirement(
-                                                requirement.ID_REQUERIMIENTO
-                                            )
-                                        }
+                                        onClick={() => handleOpenConfirmModal(group.ID_GRUPO)}
                                     >
                                         <i className="fas fa-trash"></i>
                                     </button>
                                 </div>
                             </div>
                         ))}
-                </div>
+                    </div>
+    
+                    {/* Sección de "Requerimientos" */}
+                    <div className="projects-header">
+                        <h2>Requerimientos</h2>
+                        <button
+                            className="new-project-btn"
+                            onClick={handleAddRequirement}
+                            disabled={isModalOpen}
+                        >
+                            <i className="fas fa-plus"></i> Nuevo requerimiento
+                        </button>
+                    </div>
+    
+                    {/* Lista de requerimientos */}
+                    <div className="project-list requerimientos-list">
+                        {Array.isArray(requirements) &&
+                            requirements.map((requirement, index) => (
+                                <div
+                                    key={requirement.ID_REQUERIMIENTO}
+                                    className="project-item requerimientos-list"
+                                >
+                                    {requirement.isEditing ? (
+                                        <ReactQuill
+                                            theme="snow"
+                                            value={editedDescription || requirement.DESCRIPCION_REQ}
+                                            onChange={(value) => setEditedDescription(value)}
+                                            className="requirement-quill-editor"
+                                            placeholder="Descripción del requerimiento"
+                                            style={{ width: "100%" }}
+                                        />
+                                    ) : (
+                                        <div className="project-info requerimientos-list">
+                                            <div className="requirement-text-container">
+                                                <span
+                                                    className="requirement-description"
+                                                    dangerouslySetInnerHTML={{
+                                                        __html:
+                                                            requirement.DESCRIPCION_REQ ||
+                                                            "Descripción del requerimiento",
+                                                    }}
+                                                ></span>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="project-actions requerimientos-list">
+                                        <button
+                                            className="action-btn"
+                                            onClick={() =>
+                                                requirement.isEditing
+                                                    ? handleSaveRequirement(requirement)
+                                                    : toggleEditRequirement(index, true, requirement.DESCRIPCION_REQ)
+                                            }
+                                        >
+                                            <i
+                                                className={
+                                                    requirement.isEditing
+                                                        ? "fas fa-save"
+                                                        : "fas fa-pen"
+                                                }
+                                            ></i>
+                                        </button>
+                                        <button
+                                            className="action-btn"
+                                            onClick={() => handleDeleteRequirement(requirement.ID_REQUERIMIENTO)}
+                                        >
+                                            <i className="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                    </div>
+                </div> 
             </div>
-
-            {/* Modal para crear/editar grupos */}
+    
             {showModal && (
                 <div className="modal">
                     <div className="modal-content">
-                        <h3>
-                            {isEditing ? "Editar grupo" : "Detalles del grupo"}
-                        </h3>
+                        <h3>{isEditing ? "Editar grupo" : "Detalles del grupo"}</h3>
                         <input
                             type="text"
                             value={groupName}
@@ -533,9 +539,7 @@ const Grupos = () => {
                         <div className="description-and-photo">
                             <textarea
                                 value={groupDescription}
-                                onChange={(e) =>
-                                    setGroupDescription(e.target.value)
-                                }
+                                onChange={(e) => setGroupDescription(e.target.value)}
                                 placeholder="Descripción del grupo*"
                                 className="textarea-field"
                             />
@@ -543,11 +547,7 @@ const Grupos = () => {
                                 <p className="upload-title">Incluya una foto</p>
                                 <div
                                     className="upload-box"
-                                    onClick={() =>
-                                        document
-                                            .getElementById("fileInput")
-                                            .click()
-                                    }
+                                    onClick={() => document.getElementById("fileInput").click()}
                                 >
                                     {getImagePreview() ? (
                                         <img
@@ -558,9 +558,7 @@ const Grupos = () => {
                                     ) : (
                                         <>
                                             <i className="fas fa-cloud-upload-alt"></i>
-                                            <p>
-                                                Pulsa aquí para añadir archivos
-                                            </p>
+                                            <p>Pulsa aquí para añadir archivos</p>
                                         </>
                                     )}
                                 </div>
@@ -592,7 +590,6 @@ const Grupos = () => {
                 </div>
             )}
 
-            {/* Modal de confirmación de eliminación */}
             {showConfirmModal && (
                 <ModalConfirmacion
                     show={showConfirmModal}
@@ -602,39 +599,33 @@ const Grupos = () => {
                     message="¿Está seguro de que desea eliminar este grupo?"
                 />
             )}
-
-            {/* Mensaje de éxito para creación */}
             {showCreateSuccessMessage && (
                 <ModalMensajeExito
                     message="¡Se creo el grupo exitosamente!"
                     onClose={() => setShowCreateSuccessMessage(false)}
                 />
             )}
-            {/* Mensaje de éxito para edición */}
             {showEditSuccessMessage && (
                 <ModalMensajeExito
                     message="¡Se guardaron los cambios exitosamente!"
                     onClose={() => setShowEditSuccessMessage(false)}
                 />
             )}
-
-            {/* Mensaje de éxito para eliminación */}
             {showDeleteSuccessMessage && (
                 <ModalMensajeExito
                     message="¡Se eliminó el grupo correctamente!"
                     onClose={() => setShowDeleteSuccessMessage(false)}
                 />
             )}
-
-            {/* Modal de error */}
             {showErrorMessage && (
                 <ModalError
-                    errorMessage="Por favor, complete los campos de titulo y descripción."
+                    errorMessage="Por favor, complete los campos de título y descripción."
                     closeModal={() => setShowErrorMessage(false)}
                 />
             )}
         </div>
     );
+    
 };
 
 export default Grupos;
