@@ -17,6 +17,7 @@ const ModalError = ({ title = "Error", errorMessage, closeModal }) => {
                     Aceptar
                 </button>
             </div>
+            
         </div>
     );
 };

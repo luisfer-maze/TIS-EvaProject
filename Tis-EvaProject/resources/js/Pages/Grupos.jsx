@@ -28,6 +28,7 @@ const Grupos = () => {
     const [groupToEdit, setGroupToEdit] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [image, setImage] = useState(null);
+    const [errorMessage, setErrorMessage] = useState({});
     const isModalOpen =
         showModal ||
         showConfirmModal ||
@@ -189,6 +190,7 @@ const Grupos = () => {
                 setGroups(updatedGroups);
                 setShowConfirmModal(false);
                 setGroupToDelete(null);
+                setShowDeleteSuccessMessage(true);
             })
             .catch((error) => {
                 console.error("Error al eliminar el grupo:", error);
@@ -627,7 +629,7 @@ const Grupos = () => {
             {/* Modal de error */}
             {showErrorMessage && (
                 <ModalError
-                    errorMessage="Por favor, complete todos los campos."
+                    errorMessage="Por favor, complete los campos de titulo y descripción."
                     closeModal={() => setShowErrorMessage(false)}
                 />
             )}

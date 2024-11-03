@@ -4,6 +4,7 @@ import HeaderProyecto from "../Components/HeaderProyecto";
 import "../../css/Proyectos.css";
 import "../../css/Estudiantes.css";
 import "../../css/HeaderProyecto.css";
+import "../../css/Loader.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import ModalConfirmacion from "../Components/ModalConfirmacion";
 import ModalMensajeExito from "../Components/ModalMensajeExito";
@@ -12,6 +13,7 @@ import ModalError from "../Components/ModalError";
 const Estudiantes = () => {
     const { groupId, projectId } = useParams();
     const [errorMessage, setErrorMessage] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
     const [groupInfo, setGroupInfo] = useState(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [showCreateSuccessMessage, setShowCreateSuccessMessage] =
@@ -28,7 +30,19 @@ const Estudiantes = () => {
     const [studentLastName, setStudentLastName] = useState("");
     const [studentEmail, setStudentEmail] = useState("");
     const [studentToEdit, setStudentToEdit] = useState(null);
-
+    const [projectDetails, setProjectDetails] = useState({});
+    useEffect(() => {
+        // Lógica para cargar los detalles del proyecto
+        fetch(`http://localhost:8000/api/proyectos/${projectId}`)
+            .then((response) => response.json())
+            .then((data) => {
+                console.log("Detalles del proyecto:", data);
+                setProjectDetails(data); // Almacena los detalles en el estado
+            })
+            .catch((error) =>
+                console.error("Error al cargar el proyecto:", error)
+            );
+    }, [projectId]);
     useEffect(() => {
         // Cargar los datos del grupo usando el groupId
         fetch(`http://localhost:8000/api/grupos/${groupId}`)
@@ -161,8 +175,7 @@ const Estudiantes = () => {
             return;
         }
 
-        console.log("Project ID:", projectId); // Verificar el valor de projectId
-        console.log("Group ID:", groupId); // Verificar el valor de groupId
+        setIsLoading(true);
 
         const csrfToken = document
             .querySelector('meta[name="csrf-token"]')
@@ -173,7 +186,7 @@ const Estudiantes = () => {
         formData.append("APELLIDO_EST", studentLastName || "");
         formData.append("EMAIL_EST", studentEmail);
         formData.append("ID_GRUPO", groupId);
-        formData.append("ID_PROYECTO", projectId); // Asegúrate de que projectId tiene un valor definido
+        formData.append("ID_PROYECTO", projectId);
 
         fetch("http://localhost:8000/api/estudiantes", {
             method: "POST",
@@ -195,7 +208,6 @@ const Estudiantes = () => {
                 return response.json();
             })
             .then((data) => {
-                // Actualiza la lista de estudiantes
                 setStudents((prevStudents) => [...prevStudents, data]);
                 setShowCreateSuccessMessage(true);
                 handleCloseModal();
@@ -206,6 +218,9 @@ const Estudiantes = () => {
                     "Hubo un problema al registrar el estudiante. Intente nuevamente."
                 );
                 setShowErrorMessage(true);
+            })
+            .finally(() => {
+                setIsLoading(false);
             });
     };
 
@@ -318,7 +333,7 @@ const Estudiantes = () => {
                                 onChange={(e) =>
                                     setStudentLastName(e.target.value)
                                 }
-                                placeholder="Apellido del estudiante*"
+                                placeholder="Apellido del estudiante"
                                 className="estudiantes-input-field"
                             />
                             <input
@@ -338,12 +353,16 @@ const Estudiantes = () => {
                             >
                                 Cancelar
                             </button>
-                            <button
-                                onClick={handleSaveStudent}
-                                className="create-btn"
-                            >
-                                {isEditing ? "Guardar cambios" : "Añadir"}
-                            </button>
+                            {isLoading ? (
+                                <div className="loader"></div> // Mostrar el loader si isLoading es true
+                            ) : (
+                                <button
+                                    onClick={handleSaveStudent}
+                                    className="create-btn"
+                                >
+                                    {isEditing ? "Guardar cambios" : "Añadir"}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </>
@@ -356,13 +375,13 @@ const Estudiantes = () => {
                     onClose={() => setShowConfirmModal(false)}
                     onConfirm={handleDeleteStudent}
                     title="Confirmar eliminación"
-                    message="¿Está seguro de que desea eliminar este estudiante?"
+                    message="¿Está seguro de que desea eliminar a este estudiante?"
                 />
             )}
 
             {showDeleteSuccessMessage && (
                 <ModalMensajeExito
-                    message="¡Se eliminó el estudiante correctamente!"
+                    message="¡Se eliminó al estudiante correctamente!"
                     onClose={() => setShowDeleteSuccessMessage(false)}
                 />
             )}
@@ -370,7 +389,7 @@ const Estudiantes = () => {
             {/* Mensaje de éxito para creación */}
             {showCreateSuccessMessage && (
                 <ModalMensajeExito
-                    message="¡Se creó el estudiante exitosamente!"
+                    message="¡Se agrego al estudiante exitosamente!"
                     onClose={() => setShowCreateSuccessMessage(false)}
                 />
             )}
@@ -380,14 +399,6 @@ const Estudiantes = () => {
                 <ModalMensajeExito
                     message="¡Se guardaron los cambios exitosamente!"
                     onClose={() => setShowEditSuccessMessage(false)}
-                />
-            )}
-
-            {/* Mensaje de éxito para eliminación */}
-            {showDeleteSuccessMessage && (
-                <ModalMensajeExito
-                    message="¡Se eliminó el estudiante correctamente!"
-                    onClose={() => setShowDeleteSuccessMessage(false)}
                 />
             )}
 

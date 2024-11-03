@@ -75,7 +75,7 @@ function ForgotPassword() {
         </form>
 
         {message && <p className="success-message">{message}</p>}
-        {error && <p className="error-message">{error}</p>}
+        {error && <p className="error-messagetext">{error}</p>}
 
         <Link to="/login" className="back-to-login">
           Volver al Inicio de Sesión

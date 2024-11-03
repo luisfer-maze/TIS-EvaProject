@@ -390,7 +390,7 @@ const Proyectos = () => {
             {/* Modal de error */}
             {showErrorMessage && (
                 <ModalError
-                    errorMessage="Por favor, complete todos los campos."
+                    errorMessage="Por favor, complete los campos de titulo y descripción."
                     closeModal={() => setShowErrorMessage(false)}
                 />
             )}
