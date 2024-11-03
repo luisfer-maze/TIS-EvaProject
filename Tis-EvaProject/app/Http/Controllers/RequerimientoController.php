@@ -102,4 +102,50 @@ class RequerimientoController extends Controller
 
         return response()->json($requerimiento, 201);
     }
+
+    public function destroyByStudent($id)
+    {
+        // Obtener el usuario autenticado
+        $user = Auth::guard('estudiante')->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no autenticado'], 403);
+        }
+
+        // Buscar el requerimiento
+        $requerimiento = Requerimiento::find($id);
+
+        if (!$requerimiento) {
+            return response()->json(['message' => 'Requerimiento no encontrado'], 404);
+        }
+
+        Log::info('Estudiante autenticado', ['user' => $user]);
+        Log::info('Requerimiento ID_GRUPO', ['ID_GRUPO' => $requerimiento->ID_GRUPO]);
+
+        // Verificar que el requerimiento pertenece al grupo del estudiante
+        if ($requerimiento->ID_GRUPO !== $user->ID_GRUPO) {
+            return response()->json(['message' => 'No autorizado para eliminar este requerimiento'], 403);
+        }
+
+        // Eliminar el requerimiento
+        $requerimiento->delete();
+
+        return response()->json(['message' => 'Requerimiento eliminado correctamente']);
+    }
+    public function actualizarParaEstudiante($id, Request $request)
+    {
+        Log::info('Datos recibidos para actualizar el requerimiento por estudiante:', ['data' => $request->all()]);
+        Log::info('ID del requerimiento a actualizar:', ['id' => $id]);
+
+        $requerimiento = Requerimiento::find($id);
+        if (!$requerimiento) {
+            Log::error('Requerimiento no encontrado', ['id' => $id]);
+            return response()->json(['message' => 'Requerimiento no encontrado'], 404);
+        }
+
+        $requerimiento->DESCRIPCION_REQ = $request->input('DESCRIPCION_REQ');
+        $requerimiento->save();
+
+        return response()->json($requerimiento);
+    }
 }

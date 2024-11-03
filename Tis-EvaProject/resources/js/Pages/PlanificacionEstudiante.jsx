@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // Importación de useNavigate
-import Sidebar from "../Components/SidebarEstudiante";
+import SidebarEstudiante from "../Components/SidebarEstudiante";
 import Header from "../Components/HeaderEstudiante";
 import axios from "axios";
 import "../../css/PlanificacionEstudiante.css";
-import "../../css/Sidebar.css";
+import "../../css/SidebarEstudiante.css";
 import "../../css/Proyectos.css";
 import "../../css/HistoriaUsuario.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
@@ -17,6 +17,8 @@ const PlanificacionEstudiante = () => {
     const [sprints, setSprints] = useState([]); // Inicia como lista vacía
     const [historiasUsuario, setHistoriasUsuario] = useState([]);
     const [requerimientos, setRequerimientos] = useState([]);
+    const [isEditingReq, setIsEditingReq] = useState(false); // Controla si estamos en modo de edición o creación para el requerimiento
+    const [requerimientoAEditar, setRequerimientoAEditar] = useState(null);
     const [isEditing, setIsEditing] = useState(false); // Nuevo estado para modo edición
     const [sprintEditIndex, setSprintEditIndex] = useState(null); // Índice del sprint en edición
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -75,9 +77,33 @@ const PlanificacionEstudiante = () => {
     }, []);
 
     const guardarRequerimientoParaGrupo = () => {
-        if (nuevoReq) {
-            const idGrupo = grupo?.ID_GRUPO;
+        const idGrupo = grupo?.ID_GRUPO;
 
+        if (isEditingReq) {
+            // Modo edición: actualiza el requerimiento existente
+            axios
+                .put(
+                    `http://localhost:8000/api/requerimientos/${requerimientos[reqEditIndex].ID_REQUERIMIENTO}`,
+                    {
+                        ID_GRUPO: idGrupo,
+                        DESCRIPCION_REQ: nuevoReq,
+                    }
+                )
+                .then((response) => {
+                    console.log("Requerimiento editado:", response.data);
+                    const updatedRequerimientos = [...requerimientos];
+                    updatedRequerimientos[reqEditIndex] = response.data;
+                    setRequerimientos(updatedRequerimientos);
+                    cerrarModalReq();
+                })
+                .catch((error) => {
+                    console.error("Error al editar el requerimiento:", error);
+                    alert(
+                        "Hubo un error al editar el requerimiento. Inténtalo de nuevo."
+                    );
+                });
+        } else {
+            // Modo creación: crea un nuevo requerimiento
             axios
                 .post(
                     "http://localhost:8000/api/requerimientos/crear-para-grupo",
@@ -88,12 +114,8 @@ const PlanificacionEstudiante = () => {
                 )
                 .then((response) => {
                     console.log("Requerimiento creado:", response.data);
-                    // Agrega el nuevo requerimiento a la lista actual de requerimientos
-                    setRequerimientos((prevRequerimientos) => [
-                        ...prevRequerimientos,
-                        response.data,
-                    ]);
-                    cerrarModalReq(); // Cierra el modal después de guardar
+                    setRequerimientos([...requerimientos, response.data]);
+                    cerrarModalReq();
                 })
                 .catch((error) => {
                     console.error("Error al crear el requerimiento:", error);
@@ -121,12 +143,12 @@ const PlanificacionEstudiante = () => {
     };
     const editarRequerimiento = (index) => {
         const req = requerimientos[index];
-        if (req.ID_GRUPO) {
-            // Solo permite edición si tiene un ID_GRUPO (creado por estudiante)
-            setNuevoReq(req.DESCRIPCION_REQ); // Cargar la descripción actual en el input del modal
-            abrirModalReq(); // Abre el modal para editar
-        }
+        setRequerimientoAEditar(req); // Establece el requerimiento a editar
+        setNuevoReq(req.DESCRIPCION_REQ); // Establece la descripción actual en el estado para el input
+        setIsEditingReq(true); // Cambia el estado a edición
+        setReqModalOpen(true); // Abre el modal
     };
+
     const editarHistoriaUsuario = (index) => {
         navigate(`/historia-usuario/${index}`, {
             state: { historia: historiasUsuario[index], numero: index + 1 },
@@ -148,7 +170,9 @@ const PlanificacionEstudiante = () => {
 
     const cerrarModalReq = () => {
         setReqModalOpen(false);
-        setNuevoReq("");
+        setNuevoReq(""); // Limpia el campo de input
+        setIsEditingReq(false); // Resetea el modo de edición
+        setRequerimientoAEditar(null); // Limpia el requerimiento a editar
     };
 
     const handleHUInputChange = (e) => {
@@ -323,24 +347,55 @@ const PlanificacionEstudiante = () => {
     };
 
     const eliminarRequerimiento = (id) => {
-        if (id) {
-            axios
-                .delete(`http://localhost:8000/api/requerimientos/${id}`, {
+        console.log("Intentando eliminar el requerimiento con ID:", id);
+        axios
+            .delete(
+                `http://localhost:8000/api/requerimientos/estudiante/${id}`,
+                {
                     withCredentials: true,
-                })
+                }
+            )
+            .then((response) => {
+                console.log("Requerimiento eliminado:", response.data);
+                setRequerimientos(
+                    requerimientos.filter((req) => req.ID_REQUERIMIENTO !== id)
+                );
+                setConfirmDeleteReqModalOpen(false);
+            })
+            .catch((error) => {
+                console.error("Error al eliminar el requerimiento:", error);
+                alert("Hubo un error al eliminar el requerimiento.");
+            });
+    };
+    const actualizarRequerimientoParaGrupo = () => {
+        if (requerimientoAEditar && requerimientoAEditar.ID_REQUERIMIENTO) {
+            axios
+                .put(
+                    `http://localhost:8000/api/requerimientos/estudiante/${requerimientoAEditar.ID_REQUERIMIENTO}`,
+                    {
+                        DESCRIPCION_REQ: nuevoReq,
+                    },
+                    { withCredentials: true }
+                )
                 .then((response) => {
-                    console.log("Requerimiento eliminado:", response.data);
-                    // Actualiza la lista de requerimientos después de la eliminación
-                    setRequerimientos(
-                        requerimientos.filter(
-                            (req) => req.ID_REQUERIMIENTO !== id
+                    console.log("Requerimiento actualizado:", response.data);
+                    setRequerimientos((prevRequerimientos) =>
+                        prevRequerimientos.map((req) =>
+                            req.ID_REQUERIMIENTO ===
+                            requerimientoAEditar.ID_REQUERIMIENTO
+                                ? response.data
+                                : req
                         )
                     );
-                    setConfirmDeleteReqModalOpen(false); // Cierra el modal después de eliminar
+                    setReqModalOpen(false); // Cierra el modal después de actualizar
+                    setIsEditingReq(false); // Sal del modo de edición
                 })
                 .catch((error) => {
-                    console.error("Error al eliminar el requerimiento:", error);
-                    alert("Hubo un error al eliminar el requerimiento.");
+                    console.error(
+                        "Error al actualizar el requerimiento:",
+                        error
+                    );
+                    alert("Hubo un error al actualizar el requerimiento.");
                 });
         } else {
             console.error("ID del requerimiento no está definido.");
@@ -355,9 +410,11 @@ const PlanificacionEstudiante = () => {
         >
             <Header />
             <div className="contenido-con-sidebar">
-                <Sidebar
+                <SidebarEstudiante
                     isSidebarCollapsed={isSidebarCollapsed}
                     toggleSidebar={toggleSidebar}
+                    nombreProyecto={proyecto?.NOMBRE_PROYECTO} // Campo del nombre del proyecto
+                    fotoProyecto={`http://localhost:8000/storage/${proyecto?.PORTADA_PROYECTO}`} // Ruta completa de la imagen
                 />
 
                 <div className="contenido-principal">
@@ -698,7 +755,11 @@ const PlanificacionEstudiante = () => {
             {isReqModalOpen && (
                 <div className="requerimiento-modal-overlay">
                     <div className="requerimiento-modal">
-                        <h2>Nuevo Requerimiento</h2>
+                        <h2>
+                            {isEditingReq
+                                ? "Editar Requerimiento"
+                                : "Nuevo Requerimiento"}
+                        </h2>
                         <div className="field-container">
                             <label htmlFor="requerimiento">
                                 Requerimiento:
@@ -719,10 +780,14 @@ const PlanificacionEstudiante = () => {
                                 Cancelar
                             </button>
                             <button
-                                onClick={guardarRequerimientoParaGrupo} // Cambiado aquí
+                                onClick={
+                                    isEditingReq
+                                        ? actualizarRequerimientoParaGrupo
+                                        : guardarRequerimientoParaGrupo
+                                }
                                 className="modale-button modale-button-guardar"
                             >
-                                Guardar
+                                {isEditingReq ? "Guardar cambios" : "Guardar"}
                             </button>
                         </div>
                     </div>

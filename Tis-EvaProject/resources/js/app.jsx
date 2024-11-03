@@ -16,6 +16,8 @@ import PerfilEstudiante from  "./Pages/PerfilEstudiante";
 import ApproveAccounts from './Pages/ApproveAccounts';
 import Grupos from './Pages/Grupos';
 import Estudiantes from "./Pages/Estudiantes"; // Importa el nuevo componente
+import EquipoEstudiante from "./Pages/EquipoEstudiante";
+import TareasEstudiante from "./Pages/TareasEstudiante";
 import '../css/NotFound.css'; // Importa el archivo CSS para la página NotFound
 
 function NotFound() {
@@ -51,6 +53,8 @@ function App() {
         <Route path="/perfil-estudiante" element={<PerfilEstudiante />} />
         <Route path="/approve-accounts" element={<ApproveAccounts />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/equipo-estudiante" element={<EquipoEstudiante />} />
+        <Route path="/tareas-estudiante" element={<TareasEstudiante />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

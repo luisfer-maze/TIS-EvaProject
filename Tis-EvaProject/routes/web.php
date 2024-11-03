@@ -86,7 +86,10 @@ Route::middleware(['auth:docente', CheckAdmin::class])->prefix('api')->group(fun
 });
 
 Route::post('/api/requerimientos/crear-para-grupo', [RequerimientoController::class, 'crearParaGrupo']);
-Route::delete('/api/requerimientos/{id}', [RequerimientoController::class, 'destroy'])->middleware('auth:docente,estudiante');
+Route::prefix('api')->middleware(['auth:estudiante'])->group(function () {
+    Route::delete('/requerimientos/estudiante/{id}', [RequerimientoController::class, 'destroyByStudent']);
+    Route::put('/requerimientos/estudiante/{id}', [RequerimientoController::class, 'actualizarParaEstudiante']);
+});
 
 // Ruta para el registro de usuarios (accesible para ambos roles)
 Route::post('/api/register', [AuthController::class, 'register']);
