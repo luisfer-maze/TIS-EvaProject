@@ -31,4 +31,8 @@ class Proyectos extends Model
     {
         return $this->hasMany(Requerimiento::class, 'ID_PROYECTO', 'ID_PROYECTO');
     }
+    public function docente()
+    {
+        return $this->belongsTo(Docente::class, 'ID_DOCENTE', 'ID_DOCENTE');
+    }
 }
