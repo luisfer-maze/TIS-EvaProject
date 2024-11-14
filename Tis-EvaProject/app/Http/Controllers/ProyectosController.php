@@ -219,4 +219,16 @@ class ProyectosController extends Controller
             return response()->json(['error' => 'Error al obtener los proyectos'], 500);
         }
     }
+    public function obtenerGruposYFechas($id_proyecto)
+    {
+        try {
+            $proyecto = Proyectos::with(['grupos.fechasDefensa'])
+                ->findOrFail($id_proyecto);
+
+            return response()->json($proyecto, 200);
+        } catch (\Exception $e) {
+            Log::error("Error al obtener grupos y fechas de defensa: " . $e->getMessage());
+            return response()->json(['error' => 'Error al obtener grupos y fechas de defensa'], 500);
+        }
+    }
 }

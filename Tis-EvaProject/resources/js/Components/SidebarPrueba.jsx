@@ -60,15 +60,22 @@ const SidebarPrueba = ({
                     <i className="fas fa-clipboard-list icon-menu-prueba"></i>
                     <span className="menu-text-prueba">Requerimientos</span>
                 </li>
+                <li
+                    className="menu-item-prueba"
+                    onClick={() => navigate(`/etapas-proyecto/${projectId}`)}
+                >
+                    <i className="fas fa-tasks icon-menu-prueba"></i>
+                    <span className="menu-text-prueba">Etapas y Rubrica</span>
+                </li>
 
                 {/* Planilla de seguimiento */}
                 <li
                     className="menu-item-prueba"
-                    onClick={() => navigate("/planilla-seguimiento")}
+                    onClick={() => navigate(`/planilla-seguimiento/${projectId}`)}
                 >
                     <i className="fas fa-paste icon-menu-prueba"></i>
                     <span className="menu-text-prueba">
-                        Planilla de seguimiento
+                        Planilla de Seguimiento
                     </span>
                 </li>
 
@@ -130,7 +137,7 @@ const SidebarPrueba = ({
                     >
                         <i className="fas fa-window-restore icon-menu-prueba"></i>
                         <span className="menu-text-prueba">
-                            Seguimientos y reportes
+                            Seguimientos y Reportes
                         </span>
                     </div>
                     <i

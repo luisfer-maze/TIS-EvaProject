@@ -22,6 +22,9 @@ import AgregarEstudiante from "./Pages/AgregarEstudiante";
 import EquipoEstudiante from "./Pages/EquipoEstudiante";
 import TareasEstudiante from "./Pages/TareasEstudiante";
 import RequerimientosDocente from "./Pages/RequerimientosDocente";
+import Etapas from './Pages/Etapas';
+import PlanillaDeSeguimiento from './Pages/PlanilaDeSeguimiento';
+import Rubrica from './Pages/Rubrica';
 import '../css/NotFound.css'; // Importa el archivo CSS para la página NotFound
 
 function NotFound() {
@@ -51,6 +54,7 @@ function App() {
         <Route path="/requerimientos/:projectId" element={<RequerimientosDocente />} />
         <Route path="/proyectos/:projectId/grupos/:groupId/estudiantes" element={<Estudiantes />} />
         <Route path="/proyectos/:projectId/grupos/:groupId/agregar-estudiante" element={<AgregarEstudiante />} />
+        <Route path="/proyectos/:projectId/rubrica/:etapaId" element={<Rubrica />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/proyecto-estudiante" element={<ProyectoEstudiante />} />
@@ -63,6 +67,8 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/equipo-estudiante" element={<EquipoEstudiante />} />
         <Route path="/tareas-estudiante" element={<TareasEstudiante />} />
+        <Route path="/planilla-seguimiento/:projectId" element={<PlanillaDeSeguimiento />} />
+        <Route path="/etapas-proyecto/:projectId" element={<Etapas />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

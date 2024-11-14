@@ -11,6 +11,9 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\RequerimientoController;
 use App\Http\Controllers\EstudianteController;
 use App\Http\Controllers\HistoriaUsuarioController;
+use App\Http\Controllers\FechaDefensaController;
+use App\Http\Controllers\EtapaController;
+use App\Http\Controllers\RubricaController;
 
 // Ruta de login para cargar la aplicación React
 Route::get('/login', function () {
@@ -104,6 +107,7 @@ Route::prefix('api')->middleware(['auth:estudiante'])->group(function () {
     Route::delete('/requerimientos/estudiante/{id}', [RequerimientoController::class, 'destroyByStudent']);
     Route::put('/requerimientos/estudiante/{id}', [RequerimientoController::class, 'actualizarParaEstudiante']);
     Route::post('/requerimientos/crear-para-grupo', [RequerimientoController::class, 'crearParaGrupo']);
+    Route::post('/fechas_defensa/{defenseId}/registrar', [FechaDefensaController::class, 'registerToDefense']);
 });
 
 // Ruta para el registro de usuarios (accesible para ambos roles)
@@ -134,7 +138,36 @@ Route::prefix('api')->middleware(['auth:docente,estudiante'])->group(function ()
     Route::delete('/tareas/{idTarea}', [HistoriaUsuarioController::class, 'eliminarTarea']);
     Route::put('/tareas/{id}', [HistoriaUsuarioController::class, 'actualizarTarea']);
     Route::put('tareas/{id}/responsable', [HistoriaUsuarioController::class, 'asignarResponsable']);
+});
 
+Route::prefix('api')->group(function () {
+    Route::get('/fechas_defensa', [FechaDefensaController::class, 'index']);
+    Route::post('/fechas_defensa', [FechaDefensaController::class, 'store']);
+    Route::put('/fechas_defensa/{id}', [FechaDefensaController::class, 'update']);
+    Route::delete('/fechas_defensa/{id}', [FechaDefensaController::class, 'destroy']);
+    Route::get('/proyectos/{projectId}/fechas_defensa/{studentId}', [FechaDefensaController::class, 'getFechasByProject']);
+    Route::get('/estudiante/{studentId}/group-defense-registration-status', [FechaDefensaController::class, 'getGroupDefenseRegistrationStatus']); // Obtener estado de registro de defensa del grupo
+    Route::get('/fechas_defensa/docente/{projectId}', [FechaDefensaController::class, 'getFechasByProjectForDocente']);
+   
+    Route::get('proyectos/{projectId}/etapas', [EtapaController::class, 'index']);
+    Route::post('etapas', [EtapaController::class, 'store']);
+    Route::put('etapas/{id}', [EtapaController::class, 'update']);
+    Route::delete('etapas/{id}', [EtapaController::class, 'destroy']);
+    Route::get('proyectos/{projectId}/etapas', [EtapaController::class, 'getEtapasByProyecto']);
+
+    Route::get('/proyectos/{id_proyecto}/grupos-fechas', [ProyectosController::class, 'obtenerGruposYFechas']);
+
+    Route::get('/etapas/{etapaId}', [EtapaController::class, 'show']);
+
+});
+
+// Rutas de la API para rubricas (protegidas con autenticación)
+Route::prefix('api/rubricas')->middleware(['auth:docente,estudiante'])->group(function () {
+    Route::get('/{projectId}/{etapaId}', [RubricaController::class, 'index']); // Obtener todas las rúbricas por proyecto y etapa
+    Route::post('/', [RubricaController::class, 'store']); // Crear nueva rúbrica
+    Route::get('/{id}', [RubricaController::class, 'show']); // Ver rúbrica específica
+    Route::put('/{id}', [RubricaController::class, 'update']); // Actualizar rúbrica
+    Route::delete('/{id}', [RubricaController::class, 'destroy']); // Eliminar rúbrica
 });
 
 // Ruta de prueba para verificar funcionamiento del backend

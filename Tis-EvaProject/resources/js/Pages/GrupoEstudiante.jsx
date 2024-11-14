@@ -14,9 +14,13 @@ import ModalError from "../Components/ModalError";
 
 const GrupoEstudiante = () => {
     const navigate = useNavigate();
+    const [defenseDays, setDefenseDays] = useState([]);
     const [proyecto, setProyecto] = useState(null);
+    const [isRegisteredFech, setIsRegisteredFech] = useState(
+        JSON.parse(localStorage.getItem("isRegisteredFech")) || {}
+    );
     const [showModal, setShowModal] = useState(false);
-    const { projectId,groupId } = useParams();
+    const { projectId, groupId } = useParams();
     const [isRepresentanteLegal, setIsRepresentanteLegal] = useState(false);
     const [isRegistered, setIsRegistered] = useState(
         JSON.parse(localStorage.getItem("isRegistered")) || {}
@@ -53,8 +57,94 @@ const GrupoEstudiante = () => {
         showDeleteSuccessMessage ||
         showErrorMessage;
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const daysOrder = {
+        Lunes: 1,
+        Martes: 2,
+        Miércoles: 3,
+        Jueves: 4,
+        Viernes: 5,
+        Sábado: 6,
+    };
 
     const toggleSidebar = () => setSidebarCollapsed(!isSidebarCollapsed);
+    useEffect(() => {
+        const fetchDefenseDays = async () => {
+            try {
+                const studentId = localStorage.getItem("ID_EST");
+                const response = await axios.get(
+                    `http://localhost:8000/api/proyectos/${projectId}/fechas_defensa/${studentId}`,
+                    { withCredentials: true }
+                );
+
+                setDefenseDays(sortDefenseDays(response.data));
+            } catch (error) {
+                console.error("Error al cargar las fechas de defensa:", error);
+            }
+        };
+    
+        fetchDefenseDays();
+    }, [projectId]);
+    
+    useEffect(() => {
+        const fetchGroupDefenseRegistrationStatus = async () => {
+            try {
+                const response = await axios.get(
+                    `http://localhost:8000/api/estudiante/${localStorage.getItem(
+                        "ID_EST"
+                    )}/group-defense-registration-status`,
+                    { withCredentials: true }
+                );
+                const { isRegisteredFech } = response.data;
+                setIsRegisteredFech(isRegisteredFech);
+                localStorage.setItem(
+                    "isRegisteredFech",
+                    JSON.stringify(isRegisteredFech)
+                );
+            } catch (error) {
+                console.error(
+                    "Error al cargar el estado de registro de defensa del grupo:",
+                    error
+                );
+            }
+        };
+        fetchGroupDefenseRegistrationStatus();
+    }, []);
+
+    const handleRegisterToDefense = (defenseId) => {
+        axios
+            .post(
+                `http://localhost:8000/api/fechas_defensa/${defenseId}/registrar`,
+                {},
+                { withCredentials: true }
+            )
+            .then((response) => {
+                alert(
+                    response.data.message || "Registro exitoso en la defensa"
+                );
+                setIsRegisteredFech((prevState) => ({
+                    ...prevState,
+                    [defenseId]: true,
+                }));
+                localStorage.setItem(
+                    "isRegisteredFech",
+                    JSON.stringify({
+                        ...isRegisteredFech,
+                        [defenseId]: true,
+                    })
+                );
+            })
+            .catch((error) => {
+                if (error.response && error.response.status === 409) {
+                    alert("Ya estás registrado en esta defensa");
+                } else {
+                    alert(
+                        "Hubo un problema al registrarse en la defensa. Intente nuevamente."
+                    );
+                }
+                console.error("Error al registrarse en la defensa:", error);
+            });
+    };
+
     useEffect(() => {
         const role = localStorage.getItem("ROLE");
         const estudianteId = localStorage.getItem("ID_EST");
@@ -179,7 +269,24 @@ const GrupoEstudiante = () => {
                 console.error("Error al registrarse:", error);
             });
     };
+    const sortDefenseDays = (days) => {
+        return days.sort((a, b) => {
+            // Comparar días usando el objeto daysOrder
+            const dayComparison = daysOrder[a.day] - daysOrder[b.day];
+            if (dayComparison !== 0) return dayComparison;
 
+            // Comparar horas de inicio, asegurándonos de que startTime y endTime existen
+            const startTimeA = a.startTime || a.HR_INIDEF || "";
+            const startTimeB = b.startTime || b.HR_INIDEF || "";
+            const startTimeComparison = startTimeA.localeCompare(startTimeB);
+            if (startTimeComparison !== 0) return startTimeComparison;
+
+            // Comparar horas de fin, asegurándonos de que endTime existe
+            const endTimeA = a.endTime || a.HR_FINDEF || "";
+            const endTimeB = b.endTime || b.HR_FINDEF || "";
+            return endTimeA.localeCompare(endTimeB);
+        });
+    };
     const handleGroupClick = (groupId) => {
         if (groupId === parseInt(studentGroupId)) {
             // Navega solo si es el grupo registrado del estudiante
@@ -377,6 +484,67 @@ const GrupoEstudiante = () => {
 
                 {/* Contenedor del contenido principal */}
                 <div className={`container ${isModalOpen ? "disabled" : ""}`}>
+                    <div className="projects-header">
+                        <h2>Días de defensas</h2>
+                    </div>
+                    <div className="defense-days-list">
+                        {Array.isArray(defenseDays) &&
+                            defenseDays.map((defense, index) => {
+                                // Verificar si el grupo del estudiante ya está registrado en alguna fecha
+                                const isAlreadyRegistered = Object.values(
+                                    isRegisteredFech
+                                ).some((registered) => registered === true);
+
+                                return (
+                                    <div
+                                        key={index}
+                                        className="defense-day-item"
+                                    >
+                                        <div className="defense-day-info">
+                                            <h3 className="defense-day-title">
+                                                {defense.day}
+                                            </h3>
+                                            <p className="defense-day-time">
+                                                {defense.HR_INIDEF} -{" "}
+                                                {defense.HR_FINDEF}
+                                            </p>
+                                        </div>
+                                        {defense.ID_GRUPO ? (
+                                            defense.ID_GRUPO ===
+                                            studentGroupId ? (
+                                                <span className="registered-text">
+                                                    Registrado
+                                                </span>
+                                            ) : (
+                                                <span className="registered-text">
+                                                    Reservado
+                                                </span>
+                                            )
+                                        ) : !isAlreadyRegistered ? (
+                                            <button
+                                                onClick={() =>
+                                                    handleRegisterToDefense(
+                                                        defense.ID_FECHADEF
+                                                    )
+                                                }
+                                                className="registered-button"
+                                            >
+                                                Registrarse
+                                            </button>
+                                        ) : (
+                                            isRegisteredFech[
+                                                defense.ID_FECHADEF
+                                            ] && (
+                                                <span className="registered-text">
+                                                    Registrado
+                                                </span>
+                                            )
+                                        )}
+                                    </div>
+                                );
+                            })}
+                    </div>
+
                     <div className="projects-header">
                         <h2>Grupos</h2>
                         {!createdGroupId && !studentGroupId && (

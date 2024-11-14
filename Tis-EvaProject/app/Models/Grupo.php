@@ -41,4 +41,8 @@ class Grupo extends Model
     {
         return $this->belongsToMany(Estudiante::class, 'grupo_estudiante', 'ID_GRUPO', 'ID_ESTUDIANTE');
     }
+    public function fechasDefensa()
+    {
+        return $this->hasMany(FechaDefensa::class, 'ID_GRUPO', 'ID_GRUPO');
+    }
 }

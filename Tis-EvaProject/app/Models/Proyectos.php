@@ -35,4 +35,8 @@ class Proyectos extends Model
     {
         return $this->belongsTo(Docente::class, 'ID_DOCENTE', 'ID_DOCENTE');
     }
+    public function grupos()
+    {
+        return $this->hasMany(Grupo::class, 'ID_PROYECTO', 'ID_PROYECTO');
+    }
 }
