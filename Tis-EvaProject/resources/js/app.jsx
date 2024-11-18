@@ -17,7 +17,7 @@ import ApproveAccounts from './Pages/ApproveAccounts';
 import ApproveEstudiante from './Pages/ApproveEstudiante';
 import Grupos from './Pages/Grupos';
 import GrupoEstudiante  from './Pages/GrupoEstudiante';
-import Estudiantes from "./Pages/Estudiantes"; // Importa el nuevo componente
+import Estudiantes from "./Pages/Estudiantes";
 import AgregarEstudiante from "./Pages/AgregarEstudiante";
 import EquipoEstudiante from "./Pages/EquipoEstudiante";
 import TareasEstudiante from "./Pages/TareasEstudiante";
@@ -25,7 +25,10 @@ import RequerimientosDocente from "./Pages/RequerimientosDocente";
 import Etapas from './Pages/Etapas';
 import PlanillaDeSeguimiento from './Pages/PlanilaDeSeguimiento';
 import Rubrica from './Pages/Rubrica';
-import '../css/NotFound.css'; // Importa el archivo CSS para la página NotFound
+import EvaluacionIndividual from './Pages/EvaluacionIndividual';
+import EvaluacionGrupoIndividual from './Pages/EvaluacionGrupoIndividual';
+import EvaluacionIndividualEstudiante from './Pages/EvaluacionIndividualEstudiante';
+import '../css/NotFound.css'; 
 
 function NotFound() {
   return (
@@ -69,6 +72,9 @@ function App() {
         <Route path="/tareas-estudiante" element={<TareasEstudiante />} />
         <Route path="/planilla-seguimiento/:projectId" element={<PlanillaDeSeguimiento />} />
         <Route path="/etapas-proyecto/:projectId" element={<Etapas />} />
+        <Route path="/evaluacion-individual/:projectId" element={<EvaluacionIndividual />} />
+        <Route path="/evaluacion-individual/:projectId/:examenId" element={<EvaluacionGrupoIndividual />} />
+        <Route path="/evaluacion-estudiante/:projectId/:examenId/:estudianteId/:etapaId" element={<EvaluacionIndividualEstudiante />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
