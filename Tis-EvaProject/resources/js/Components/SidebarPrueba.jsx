@@ -71,7 +71,9 @@ const SidebarPrueba = ({
                 {/* Planilla de seguimiento */}
                 <li
                     className="menu-item-prueba"
-                    onClick={() => navigate(`/planilla-seguimiento/${projectId}`)}
+                    onClick={() =>
+                        navigate(`/planilla-seguimiento/${projectId}`)
+                    }
                 >
                     <i className="fas fa-paste icon-menu-prueba"></i>
                     <span className="menu-text-prueba">
@@ -101,26 +103,35 @@ const SidebarPrueba = ({
                     <div className="submenu">
                         <ul
                             className="menu-item-prueba"
-                            onClick={() => navigate(`/evaluacion-individual/${projectId}`)}
+                            onClick={() =>
+                                navigate(`/evaluacion-individual/${projectId}`)
+                            }
                         >
+                            <i className="fas fa-user icon-menu-prueba"></i>
                             <span className="menu-text-prueba">
-                                Evaluacion Individual
+                                Evaluación Individual
                             </span>
                         </ul>
                         <ul
                             className="menu-item-prueba"
-                            onClick={() => navigate("/registrar-evaluaciones")}
+                            onClick={() =>
+                                navigate(`/evaluacion-de-pares/${projectId}`)
+                            }
                         >
+                            <i className="fas fa-users icon-menu-prueba"></i>
                             <span className="menu-text-prueba">
-                                Registrar Evaluaciones
+                                Evaluación de Pares
                             </span>
                         </ul>
                         <ul
                             className="menu-item-prueba"
-                            onClick={() => navigate("/tipo-evaluacion")}
+                            onClick={() =>
+                                navigate(`/evaluacion-cruzada/${projectId}`)
+                            }
                         >
+                            <i className="fas fa-random icon-menu-prueba"></i>
                             <span className="menu-text-prueba">
-                                Tipo de Evaluacion
+                                Evaluación Cruzada
                             </span>
                         </ul>
                     </div>
