@@ -81,10 +81,10 @@ const GrupoEstudiante = () => {
                 console.error("Error al cargar las fechas de defensa:", error);
             }
         };
-    
+
         fetchDefenseDays();
     }, [projectId]);
-    
+
     useEffect(() => {
         const fetchGroupDefenseRegistrationStatus = async () => {
             try {
@@ -202,7 +202,7 @@ const GrupoEstudiante = () => {
         const obtenerGrupos = async () => {
             try {
                 const response = await axios.get(
-                    `http://localhost:8000/api/proyectos/${projectId}/grupos`,
+                    `http://localhost:8000/api/proyectos/${projectId}/grupos-hora`,
                     { withCredentials: true }
                 );
 
@@ -489,8 +489,8 @@ const GrupoEstudiante = () => {
                     </div>
                     <div className="defense-days-list">
                         {Array.isArray(defenseDays) &&
+                        defenseDays.length > 0 ? (
                             defenseDays.map((defense, index) => {
-                                // Verificar si el grupo del estudiante ya está registrado en alguna fecha
                                 const isAlreadyRegistered = Object.values(
                                     isRegisteredFech
                                 ).some((registered) => registered === true);
@@ -502,11 +502,15 @@ const GrupoEstudiante = () => {
                                     >
                                         <div className="defense-day-info">
                                             <h3 className="defense-day-title">
-                                                {defense.day}
+                                                {defense.day ||
+                                                    "Día no especificado"}
                                             </h3>
                                             <p className="defense-day-time">
-                                                {defense.HR_INIDEF} -{" "}
-                                                {defense.HR_FINDEF}
+                                                {defense.HR_INIDEF ||
+                                                    "Hora no especificada"}{" "}
+                                                -{" "}
+                                                {defense.HR_FINDEF ||
+                                                    "Hora no especificada"}
                                             </p>
                                         </div>
                                         {defense.ID_GRUPO ? (
@@ -542,7 +546,10 @@ const GrupoEstudiante = () => {
                                         )}
                                     </div>
                                 );
-                            })}
+                            })
+                        ) : (
+                            <p>No hay días de defensa disponibles.</p>
+                        )}
                     </div>
 
                     <div className="projects-header">
@@ -565,78 +572,85 @@ const GrupoEstudiante = () => {
                     </div>
 
                     <div className="project-list">
-                        {groups.map((group, index) => (
-                            <div key={index} className="project-item">
-                                {group.PORTADA_GRUPO ? (
+                        {Array.isArray(groups) && groups.length > 0 ? (
+                            groups.map((group, index) => (
+                                <div key={index} className="project-item">
                                     <img
-                                        src={`http://localhost:8000/storage/${group.PORTADA_GRUPO}`}
+                                        src={
+                                            group.PORTADA_GRUPO
+                                                ? `http://localhost:8000/storage/${group.PORTADA_GRUPO}`
+                                                : "https://via.placeholder.com/50"
+                                        }
                                         alt="Icono del grupo"
                                         width="50"
                                         height="50"
                                     />
-                                ) : (
-                                    <img
-                                        src="https://via.placeholder.com/50"
-                                        alt="Icono del grupo"
-                                    />
-                                )}
-                                <div className="project-info">
-                                    <h3
-                                        onClick={() =>
-                                            handleGroupClick(group.ID_GRUPO)
-                                        }
-                                        style={{ cursor: "pointer" }}
-                                    >
-                                        {group.NOMBRE_GRUPO}
-                                    </h3>
-                                    <p>{group.DESCRIP_GRUPO}</p>
-                                </div>
-                                {isRL &&
-                                    group.CREADO_POR ===
+                                    <div className="project-info">
+                                        <h3
+                                            onClick={() =>
+                                                handleGroupClick(group.ID_GRUPO)
+                                            }
+                                            style={{ cursor: "pointer" }}
+                                        >
+                                            {group.NOMBRE_GRUPO ||
+                                                "Nombre no disponible"}
+                                        </h3>
+                                        <p>
+                                            {group.DESCRIP_GRUPO ||
+                                                "Descripción no disponible"}
+                                        </p>
+                                    </div>
+                                    {isRL &&
+                                        group.CREADO_POR ===
+                                            parseInt(
+                                                localStorage.getItem("ID_EST")
+                                            ) &&
+                                        (isRegistered ? (
+                                            <span className="registered-text">
+                                                Registrado
+                                            </span>
+                                        ) : (
+                                            <button
+                                                onClick={() =>
+                                                    handleRegister(
+                                                        group.ID_GRUPO
+                                                    )
+                                                }
+                                                className="registered-button"
+                                            >
+                                                Registrarse
+                                            </button>
+                                        ))}
+                                    {group.CREADO_POR ===
                                         parseInt(
                                             localStorage.getItem("ID_EST")
-                                        ) &&
-                                    (isRegistered ? (
-                                        <span className="registered-text">
-                                            Registrado
-                                        </span>
-                                    ) : (
-                                        <button
-                                            onClick={() =>
-                                                handleRegister(group.ID_GRUPO)
-                                            }
-                                            className="registered-button"
-                                        >
-                                            Registrarse
-                                        </button>
-                                    ))}
-                                {group.CREADO_POR ===
-                                    parseInt(
-                                        localStorage.getItem("ID_EST")
-                                    ) && (
-                                    <div className="project-actions">
-                                        <button
-                                            className="action-btn"
-                                            onClick={() =>
-                                                handleOpenEditModal(index)
-                                            }
-                                        >
-                                            <i className="fas fa-pen"></i>
-                                        </button>
-                                        <button
-                                            className="action-btn"
-                                            onClick={() =>
-                                                handleOpenConfirmModal(
-                                                    group.ID_GRUPO
-                                                )
-                                            }
-                                        >
-                                            <i className="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                                        ) && (
+                                        <div className="project-actions">
+                                            <button
+                                                className="action-btn"
+                                                onClick={() =>
+                                                    handleOpenEditModal(index)
+                                                }
+                                            >
+                                                <i className="fas fa-pen"></i>
+                                            </button>
+                                            <button
+                                                className="action-btn"
+                                                onClick={() =>
+                                                    handleOpenConfirmModal(
+                                                        group.ID_GRUPO
+                                                    )
+                                                }
+                                            >
+                                                <i className="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        ) : (
+                            <p>No hay grupos disponibles.</p>
+                        )}
                     </div>
 
                     {successMessage && (

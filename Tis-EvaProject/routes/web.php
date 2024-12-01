@@ -16,6 +16,7 @@ use App\Http\Controllers\EtapaController;
 use App\Http\Controllers\RubricaController;
 use App\Http\Controllers\EvaluacionIndividualController;
 use App\Http\Controllers\EvaluacionIndividualEstudianteController;
+use App\Http\Controllers\EvaluacionParController;
 
 // Ruta de login para cargar la aplicación React
 Route::get('/login', function () {
@@ -57,7 +58,7 @@ Route::prefix('api')->middleware(['auth:docente,estudiante'])->group(function ()
 });
 
 Route::prefix('api')->middleware(['auth:docente,estudiante'])->group(function () {
-    Route::get('/proyectos/{projectId}/grupos', [GrupoController::class, 'index']);
+    Route::get('/proyectos/{projectId}/grupos-hora', [GrupoController::class, 'index']);
     Route::post('/grupos', [GrupoController::class, 'store']);
     Route::put('/grupos/{id}', [GrupoController::class, 'update']);
     Route::delete('/grupos/{id}', [GrupoController::class, 'destroy']);
@@ -115,15 +116,10 @@ Route::prefix('api')->middleware(['auth:estudiante'])->group(function () {
 
 // Ruta para el registro de usuarios (accesible para ambos roles)
 Route::post('/api/register', [AuthController::class, 'register']);
-
 Route::get('/api/projects/all', [ProyectosController::class, 'indexAll']);
-
 Route::post('/api/students/register-to-project/{projectId}', [EstudianteAuthController::class, 'registerToProject']);
-
 Route::get('/api/students/{studentId}/registered-project', [EstudianteAuthController::class, 'getRegisteredProject']);
-
 Route::get('/api/proyectos/{projectId}/grupos-estudiante', [GrupoController::class, 'getGruposForEstudiante']);
-
 Route::put('/api/estudiantes/{id}/rol', [EstudianteController::class, 'updateRole']);
 
 Route::prefix('api')->middleware(['auth:docente,estudiante'])->group(function () {
@@ -159,6 +155,8 @@ Route::prefix('api')->group(function () {
     Route::delete('etapas/{id}', [EtapaController::class, 'destroy']);
     Route::get('proyectos/{projectId}/etapas', [EtapaController::class, 'getEtapasByProyecto']);
 
+    Route::get('/proyectos/{projectId}/grupos', [ProyectosController::class, 'getProjectGroups']);
+
     Route::get('/proyectos/{id_proyecto}/grupos-fechas', [ProyectosController::class, 'obtenerGruposYFechas']);
 
     Route::get('/etapas/{etapaId}', [EtapaController::class, 'show']);
@@ -168,7 +166,12 @@ Route::prefix('api')->group(function () {
     Route::put('/evaluaciones-individuales-estudiantes/{id}', [EvaluacionIndividualEstudianteController::class, 'update']);
     Route::put('/evaluaciones-individuales/{idEstudiante}/{idEtapa}/falta-retraso', [EvaluacionIndividualEstudianteController::class, 'actualizarFaltaRetraso']);
     Route::get('/evaluaciones-individuales/{idGrupo}/{idEtapa}/falta-retraso', [EvaluacionIndividualEstudianteController::class, 'obtenerFaltaRetrasoPorGrupo']);
+    Route::get('/grupos/{groupId}/notas', [EvaluacionIndividualEstudianteController::class, 'obtenerNotasPorGrupo']);
+    Route::get('/evaluaciones/etapa/{etapaId}/grupo/{grupoId}', [EvaluacionIndividualEstudianteController::class, 'obtenerEvaluaciones']);
 
+    Route::post('/evaluaciones-pares', [EvaluacionParController::class, 'store']);
+    Route::get('/evaluaciones-pares/proyecto/{projectId}', [EvaluacionParController::class, 'index']);
+    Route::get('/evaluaciones-pares/{id}', [EvaluacionParController::class, 'show']);
 });
 
 // Rutas de la API para rubricas (protegidas con autenticación)

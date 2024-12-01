@@ -56,7 +56,7 @@ const Grupos = () => {
     useEffect(() => {
         const obtenerGrupos = async () => {
             const response = await axios.get(
-                `http://localhost:8000/api/proyectos/${projectId}/grupos`,
+                `http://localhost:8000/api/proyectos/${projectId}/grupos-hora`,
                 { withCredentials: true }
             );
             setGroups(response.data.grupos);
