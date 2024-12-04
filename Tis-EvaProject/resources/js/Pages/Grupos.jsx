@@ -286,87 +286,83 @@ const Grupos = () => {
                         </button>
                     </div>
                     <div className="defense-days-list">
-                        {Array.isArray(defenseDays) &&
-                            defenseDays.map((defense, index) => (
-                                <div key={index} className="defense-day-item">
-                                    <div className="defense-day-info">
-                                        <h3 className="defense-day-title">
-                                            {defense.day}
-                                        </h3>
-                                        <p className="defense-day-time">
-                                            {defense.HR_INIDEF} -{" "}
-                                            {defense.HR_FINDEF}
-                                        </p>
-                                    </div>
-                                    <div className="defense-day-status">
-                                        {defense.ID_GRUPO ? (
-                                            <span className="reserved-text">
-                                                Reservado por:{" "}
-                                                {defense.NOMBRE_GRUPO}
-                                            </span>
-                                        ) : (
-                                            <span className="available-text">
-                                                Disponible
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="projects-actions">
-                                        <button
-                                            className="actions-btn"
-                                            onClick={() =>
-                                                handleOpenEditModal(index)
-                                            }
-                                        >
-                                            <i className="fas fa-pen"></i>
-                                        </button>
-                                        <button
-                                            className="actions-btn"
-                                            onClick={() =>
-                                                openConfirmDeleteModal(index)
-                                            }
-                                        >
-                                            <i className="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                    </div>
-
+    {Array.isArray(defenseDays) && defenseDays.length > 0 ? (
+        defenseDays.map((defense, index) => (
+            <div key={index} className="defense-day-item">
+                <div className="defense-day-info">
+                    <h3 className="defense-day-title">{defense.day}</h3>
+                    <p className="defense-day-time">
+                        {defense.HR_INIDEF} - {defense.HR_FINDEF}
+                    </p>
+                </div>
+                <div className="defense-day-status">
+                    {defense.ID_GRUPO ? (
+                        <span className="reserved-text">
+                            Reservado por: {defense.NOMBRE_GRUPO}
+                        </span>
+                    ) : (
+                        <span className="available-text">Disponible</span>
+                    )}
+                </div>
+                <div className="projects-actions">
+                    <button
+                        className="actions-btn"
+                        onClick={() => handleOpenEditModal(index)}
+                    >
+                        <i className="fas fa-pen"></i>
+                    </button>
+                    <button
+                        className="actions-btn"
+                        onClick={() => openConfirmDeleteModal(index)}
+                    >
+                        <i className="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        ))
+    ) : (
+        <p className="no-data-message">No hay días de defensa registrados.</p>
+    )}
+</div>
                     <div className="projects-header">
                         <h2>Grupo Empresas</h2>
                     </div>
                     <div className="project-list">
-                        {groups.map((group, index) => (
-                            <div key={index} className="project-item">
-                                {group.PORTADA_GRUPO ? (
-                                    <img
-                                        src={`http://localhost:8000/storage/${group.PORTADA_GRUPO}`}
-                                        alt="Icono del grupo"
-                                        width="50"
-                                        height="50"
-                                    />
-                                ) : (
-                                    <img
-                                        src="https://via.placeholder.com/50"
-                                        alt="Icono del grupo"
-                                    />
-                                )}
-                                <div className="project-info">
-                                    <h3
-                                        onClick={() =>
-                                            navigate(
-                                                `/proyectos/${projectId}/grupos/${group.ID_GRUPO}/estudiantes`
-                                            )
-                                        }
-                                        style={{ cursor: "pointer" }}
-                                    >
-                                        {group.NOMBRE_GRUPO}
-                                    </h3>
-                                    <p>{group.DESCRIP_GRUPO}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+    {groups.length > 0 ? (
+        groups.map((group, index) => (
+            <div key={index} className="project-item">
+                {group.PORTADA_GRUPO ? (
+                    <img
+                        src={`http://localhost:8000/storage/${group.PORTADA_GRUPO}`}
+                        alt="Icono del grupo"
+                        width="50"
+                        height="50"
+                    />
+                ) : (
+                    <img
+                        src="https://via.placeholder.com/50"
+                        alt="Icono del grupo"
+                    />
+                )}
+                <div className="project-info">
+                    <h3
+                        onClick={() =>
+                            navigate(
+                                `/proyectos/${projectId}/grupos/${group.ID_GRUPO}/estudiantes`
+                            )
+                        }
+                        style={{ cursor: "pointer" }}
+                    >
+                        {group.NOMBRE_GRUPO}
+                    </h3>
+                    <p>{group.DESCRIP_GRUPO}</p>
+                </div>
+            </div>
+        ))
+    ) : (
+        <p className="no-data-message">No hay grupos registrados.</p>
+    )}
+</div>
                 </div>
             </div>
 

@@ -17,13 +17,20 @@ const RequerimientosDocente = () => {
     const navigate = useNavigate();
     const { projectId } = useParams();
     const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [showCreateSuccessMessage, setShowCreateSuccessMessage] = useState(false);
+    const [showCreateSuccessMessage, setShowCreateSuccessMessage] =
+        useState(false);
     const [showEditSuccessMessage, setShowEditSuccessMessage] = useState(false);
-    const [showDeleteSuccessMessage, setShowDeleteSuccessMessage] = useState(false);
+    const [showDeleteSuccessMessage, setShowDeleteSuccessMessage] =
+        useState(false);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [errorMessage, setErrorMessage] = useState({});
-    const isModalOpen = showConfirmModal || showCreateSuccessMessage || showEditSuccessMessage || showDeleteSuccessMessage || showErrorMessage;
+    const isModalOpen =
+        showConfirmModal ||
+        showCreateSuccessMessage ||
+        showEditSuccessMessage ||
+        showDeleteSuccessMessage ||
+        showErrorMessage;
     const [requirements, setRequirements] = useState([]);
     const [projectDetails, setProjectDetails] = useState({});
     const [editedDescription, setEditedDescription] = useState("");
@@ -36,7 +43,9 @@ const RequerimientosDocente = () => {
         fetch(`http://localhost:8000/api/proyectos/${projectId}`)
             .then((response) => response.json())
             .then((data) => setProjectDetails(data))
-            .catch((error) => console.error("Error al cargar el proyecto:", error));
+            .catch((error) =>
+                console.error("Error al cargar el proyecto:", error)
+            );
     }, [projectId]);
 
     useEffect(() => {
@@ -58,11 +67,15 @@ const RequerimientosDocente = () => {
                 ];
                 setRequirements(allRequirements);
             })
-            .catch((error) => console.error("Error al cargar los requerimientos:", error));
+            .catch((error) =>
+                console.error("Error al cargar los requerimientos:", error)
+            );
     };
 
     const handleAddRequirement = () => {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content");
         const newRequirement = {
             ID_PROYECTO: projectId,
             DESCRIPCION_REQ: "Descripción del nuevo requerimiento",
@@ -83,14 +96,22 @@ const RequerimientosDocente = () => {
             })
             .catch((error) => {
                 console.error("Error al agregar requerimiento:", error);
-                setErrorMessage("Hubo un problema al agregar el requerimiento.");
+                setErrorMessage(
+                    "Hubo un problema al agregar el requerimiento."
+                );
                 setShowErrorMessage(true);
             });
     };
 
-    const toggleEditRequirement = (index, isEditing, currentDescription = "") => {
+    const toggleEditRequirement = (
+        index,
+        isEditing,
+        currentDescription = ""
+    ) => {
         setRequirements((prevRequirements) =>
-            prevRequirements.map((req, i) => (i === index ? { ...req, isEditing: isEditing } : req))
+            prevRequirements.map((req, i) =>
+                i === index ? { ...req, isEditing: isEditing } : req
+            )
         );
         setEditedDescription(isEditing ? currentDescription : "");
     };
@@ -103,14 +124,19 @@ const RequerimientosDocente = () => {
     const handleDeleteRequirement = () => {
         if (!requirementToDelete) return;
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content");
 
-        fetch(`http://localhost:8000/api/requerimientos/${requirementToDelete}`, {
-            method: "DELETE",
-            headers: {
-                "X-CSRF-TOKEN": csrfToken,
-            },
-        })
+        fetch(
+            `http://localhost:8000/api/requerimientos/${requirementToDelete}`,
+            {
+                method: "DELETE",
+                headers: {
+                    "X-CSRF-TOKEN": csrfToken,
+                },
+            }
+        )
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("Error al eliminar el requerimiento");
@@ -119,7 +145,9 @@ const RequerimientosDocente = () => {
             })
             .then(() => {
                 setRequirements((prevRequirements) =>
-                    prevRequirements.filter((req) => req.ID_REQUERIMIENTO !== requirementToDelete)
+                    prevRequirements.filter(
+                        (req) => req.ID_REQUERIMIENTO !== requirementToDelete
+                    )
                 );
                 setRequirementToDelete(null);
                 setShowDeleteSuccessMessage(true);
@@ -127,22 +155,29 @@ const RequerimientosDocente = () => {
             })
             .catch((error) => {
                 console.error("Error al eliminar el requerimiento:", error);
-                setErrorMessage("Hubo un problema al eliminar el requerimiento.");
+                setErrorMessage(
+                    "Hubo un problema al eliminar el requerimiento."
+                );
                 setShowErrorMessage(true);
             });
     };
 
     const handleSaveRequirement = (requirement) => {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content");
 
-        fetch(`http://localhost:8000/api/requerimientos/${requirement.ID_REQUERIMIENTO}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": csrfToken,
-            },
-            body: JSON.stringify({ DESCRIPCION_REQ: editedDescription }),
-        })
+        fetch(
+            `http://localhost:8000/api/requerimientos/${requirement.ID_REQUERIMIENTO}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                },
+                body: JSON.stringify({ DESCRIPCION_REQ: editedDescription }),
+            }
+        )
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("Error al actualizar el requerimiento");
@@ -153,7 +188,11 @@ const RequerimientosDocente = () => {
                 setRequirements((prevRequirements) =>
                     prevRequirements.map((req) =>
                         req.ID_REQUERIMIENTO === data.ID_REQUERIMIENTO
-                            ? { ...req, DESCRIPCION_REQ: data.DESCRIPCION_REQ, isEditing: false }
+                            ? {
+                                  ...req,
+                                  DESCRIPCION_REQ: data.DESCRIPCION_REQ,
+                                  isEditing: false,
+                              }
                             : req
                     )
                 );
@@ -162,13 +201,19 @@ const RequerimientosDocente = () => {
             })
             .catch((error) => {
                 console.error("Error al actualizar el requerimiento:", error);
-                setErrorMessage("Hubo un problema al actualizar el requerimiento.");
+                setErrorMessage(
+                    "Hubo un problema al actualizar el requerimiento."
+                );
                 setShowErrorMessage(true);
             });
     };
 
     return (
-        <div className={`grupos-container ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
+        <div
+            className={`grupos-container ${
+                isSidebarCollapsed ? "sidebar-collapsed" : ""
+            }`}
+        >
             <HeaderProyecto isModalOpen={isModalOpen} />
 
             <div className="grupos-sidebar-content">
@@ -193,53 +238,81 @@ const RequerimientosDocente = () => {
                     </div>
 
                     <div className="project-list requerimientos-list">
-                        {requirements.map((requirement, index) => (
-                            <div key={requirement.ID_REQUERIMIENTO} className="project-item requerimientos-list">
-                                {requirement.isEditing ? (
-                                    <ReactQuill
-                                        theme="snow"
-                                        value={editedDescription || requirement.DESCRIPCION_REQ}
-                                        onChange={(value) => setEditedDescription(value)}
-                                        className="requirement-quill-editor"
-                                        placeholder="Descripción del requerimiento"
-                                        style={{ width: "100%" }}
-                                    />
-                                ) : (
-                                    <div className="project-info requerimientos-list">
-                                        <div className="requirement-text-container">
-                                            <span
-                                                className="requirement-description"
-                                                dangerouslySetInnerHTML={{
-                                                    __html: requirement.DESCRIPCION_REQ || "Descripción del requerimiento",
-                                                }}
-                                            ></span>
-                                        </div>
-                                    </div>
-                                )}
-                                <div className="project-actions requerimientos-list">
-                                    <button
-                                        className="action-btn"
-                                        onClick={() =>
-                                            requirement.isEditing
-                                                ? handleSaveRequirement(requirement)
-                                                : toggleEditRequirement(index, true, requirement.DESCRIPCION_REQ)
-                                        }
-                                    >
-                                        <i
-                                            className={
-                                                requirement.isEditing ? "fas fa-save" : "fas fa-pen"
+                        {requirements.length > 0 ? (
+                            requirements.map((requirement, index) => (
+                                <div
+                                    key={requirement.ID_REQUERIMIENTO}
+                                    className="project-item requerimientos-list"
+                                >
+                                    {requirement.isEditing ? (
+                                        <ReactQuill
+                                            theme="snow"
+                                            value={
+                                                editedDescription ||
+                                                requirement.DESCRIPCION_REQ
                                             }
-                                        ></i>
-                                    </button>
-                                    <button
-                                        className="action-btn"
-                                        onClick={() => openConfirmDeleteModal(requirement.ID_REQUERIMIENTO)}
-                                    >
-                                        <i className="fas fa-trash"></i>
-                                    </button>
+                                            onChange={(value) =>
+                                                setEditedDescription(value)
+                                            }
+                                            className="requirement-quill-editor"
+                                            placeholder="Descripción del requerimiento"
+                                            style={{ width: "100%" }}
+                                        />
+                                    ) : (
+                                        <div className="project-info requerimientos-list">
+                                            <div className="requirement-text-container">
+                                                <span
+                                                    className="requirement-description"
+                                                    dangerouslySetInnerHTML={{
+                                                        __html:
+                                                            requirement.DESCRIPCION_REQ ||
+                                                            "Descripción del requerimiento",
+                                                    }}
+                                                ></span>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="project-actions requerimientos-list">
+                                        <button
+                                            className="action-btn"
+                                            onClick={() =>
+                                                requirement.isEditing
+                                                    ? handleSaveRequirement(
+                                                          requirement
+                                                      )
+                                                    : toggleEditRequirement(
+                                                          index,
+                                                          true,
+                                                          requirement.DESCRIPCION_REQ
+                                                      )
+                                            }
+                                        >
+                                            <i
+                                                className={
+                                                    requirement.isEditing
+                                                        ? "fas fa-save"
+                                                        : "fas fa-pen"
+                                                }
+                                            ></i>
+                                        </button>
+                                        <button
+                                            className="action-btn"
+                                            onClick={() =>
+                                                openConfirmDeleteModal(
+                                                    requirement.ID_REQUERIMIENTO
+                                                )
+                                            }
+                                        >
+                                            <i className="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            <p className="no-data-message">
+                                No hay requerimientos registrados.
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>

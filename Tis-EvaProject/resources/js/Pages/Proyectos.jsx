@@ -253,82 +253,101 @@ const Proyectos = () => {
                 </div>
 
                 <div className="project-list">
-                    {projects.map((project, index) => (
-                        <div key={index} className="project-item">
-                            {project.PORTADA_PROYECTO ? (
-                                <img
-                                    src={`http://localhost:8000/storage/${project.PORTADA_PROYECTO}`}
-                                    alt="Icono del proyecto"
-                                    width="50"
-                                    height="50"
-                                />
-                            ) : (
-                                <img
-                                    src="https://via.placeholder.com/50"
-                                    alt="Icono del proyecto"
-                                />
-                            )}
-                            <div className="project-info">
-                                <h3
-                                    onClick={() =>
-                                        navigate(
-                                            `/grupos/${project.ID_PROYECTO}`
-                                        )
-                                    }
-                                    className="project-title"
-                                >
-                                    {project.NOMBRE_PROYECTO}
-                                </h3>
+                    {projects.length > 0 ? (
+                        projects.map((project, index) => (
+                            <div key={index} className="project-item">
+                                {project.PORTADA_PROYECTO ? (
+                                    <img
+                                        src={`http://localhost:8000/storage/${project.PORTADA_PROYECTO}`}
+                                        alt="Icono del proyecto"
+                                        width="50"
+                                        height="50"
+                                    />
+                                ) : (
+                                    <img
+                                        src="https://via.placeholder.com/50"
+                                        alt="Icono del proyecto"
+                                    />
+                                )}
+                                <div className="project-info">
+                                    <h3
+                                        onClick={() =>
+                                            navigate(
+                                                `/grupos/${project.ID_PROYECTO}`
+                                            )
+                                        }
+                                        className="project-title"
+                                    >
+                                        {project.NOMBRE_PROYECTO}
+                                    </h3>
 
-                                <p className="project-description">
-                                    {project.DESCRIP_PROYECTO}
-                                </p>
+                                    <p className="project-description">
+                                        {project.DESCRIP_PROYECTO}
+                                    </p>
 
-                                <div className="project-dates">
-    <p>
-        <strong>Fecha de inicio:</strong>{" "}
-        {project.FECHA_INICIO_PROYECTO
-            ? new Date(project.FECHA_INICIO_PROYECTO + "T00:00:00").toLocaleDateString("es-ES", {
-                  weekday: "long",
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-              })
-            : ""}
-    </p>
-    <p>
-        <strong>Fecha de fin:</strong>{" "}
-        {project.FECHA_FIN_PROYECTO
-            ? new Date(project.FECHA_FIN_PROYECTO + "T00:00:00").toLocaleDateString("es-ES", {
-                  weekday: "long",
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-              })
-            : ""}
-    </p>
-</div>
+                                    <div className="project-dates">
+                                        <p>
+                                            <strong>Fecha de inicio:</strong>{" "}
+                                            {project.FECHA_INICIO_PROYECTO
+                                                ? new Date(
+                                                      project.FECHA_INICIO_PROYECTO +
+                                                          "T00:00:00"
+                                                  ).toLocaleDateString(
+                                                      "es-ES",
+                                                      {
+                                                          weekday: "long",
+                                                          day: "2-digit",
+                                                          month: "long",
+                                                          year: "numeric",
+                                                      }
+                                                  )
+                                                : ""}
+                                        </p>
+                                        <p>
+                                            <strong>Fecha de fin:</strong>{" "}
+                                            {project.FECHA_FIN_PROYECTO
+                                                ? new Date(
+                                                      project.FECHA_FIN_PROYECTO +
+                                                          "T00:00:00"
+                                                  ).toLocaleDateString(
+                                                      "es-ES",
+                                                      {
+                                                          weekday: "long",
+                                                          day: "2-digit",
+                                                          month: "long",
+                                                          year: "numeric",
+                                                      }
+                                                  )
+                                                : ""}
+                                        </p>
+                                    </div>
+                                </div>
 
+                                <div className="project-actions">
+                                    <button
+                                        className="action-btn"
+                                        onClick={() =>
+                                            handleOpenEditModal(index)
+                                        }
+                                    >
+                                        <i className="fas fa-pen"></i>
+                                    </button>
+                                    <button
+                                        className="action-btn"
+                                        onClick={() =>
+                                            handleOpenConfirmModal(index)
+                                        }
+                                    >
+                                        <i className="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </div>
-
-                            <div className="project-actions">
-                                <button
-                                    className="action-btn"
-                                    onClick={() => handleOpenEditModal(index)}
-                                >
-                                    <i className="fas fa-pen"></i>
-                                </button>
-                                <button
-                                    className="action-btn"
-                                    onClick={() =>
-                                        handleOpenConfirmModal(index)
-                                    }
-                                >
-                                    <i className="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                        ))
+                    ) : (
+                        <p className="no-data-message">
+                            No hay proyectos registrados.
+                        </p>
+                    )}
                 </div>
             </div>
 

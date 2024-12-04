@@ -4,8 +4,9 @@ import axios from "axios";
 
 const PlanillaEvaGrupoIndividual = ({ grupoId, etapaId }) => {
     const [planillaNotas, setPlanillaNotas] = useState([]);
-    const [etapaDetails, setEtapaDetails] = useState({});
-    const [grupoDetails, setGrupoDetails] = useState({});
+    const [etapaDetails, setEtapaDetails] = useState({ titulo: "Cargando...", puntuacion: 0 });
+    const [grupoDetails, setGrupoDetails] = useState({ nombre: "Cargando..." });
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchPlanilla = async () => {
@@ -15,14 +16,13 @@ const PlanillaEvaGrupoIndividual = ({ grupoId, etapaId }) => {
                     { withCredentials: true }
                 );
 
-                setEtapaDetails(response.data.etapa);
-                setGrupoDetails(response.data.grupo);
-                setPlanillaNotas(response.data.evaluaciones);
+                setEtapaDetails(response.data.etapa || { titulo: "Sin datos", puntuacion: 0 });
+                setGrupoDetails(response.data.grupo || { nombre: "Sin datos" });
+                setPlanillaNotas(response.data.evaluaciones || []);
             } catch (error) {
-                console.error(
-                    "Error al cargar la planilla de evaluación:",
-                    error
-                );
+                console.error("Error al cargar la planilla de evaluación:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -32,19 +32,21 @@ const PlanillaEvaGrupoIndividual = ({ grupoId, etapaId }) => {
     }, [grupoId, etapaId]);
 
     // Crear columnas dinámicas para las rúbricas
-    const rubricaColumns =
-        planillaNotas[0]?.evaluacion.rubricas.map((rubrica) => ({
-            title: `${rubrica.nombre_rubrica}`,
-            dataIndex: "evaluacion",
-            key: `${rubrica.rubrica_id}_ajustada`,
-            render: (evaluacion) => {
-                const currentRubrica = evaluacion.rubricas.find(
-                    (r) => r.rubrica_id === rubrica.rubrica_id
-                );
-                return currentRubrica ? currentRubrica.puntuacion_ajustada : "-";
-            },
-            width: 150,
-        })) || [];
+    const rubricaColumns = 
+        planillaNotas.length > 0 && planillaNotas[0]?.evaluacion?.rubricas
+            ? planillaNotas[0].evaluacion.rubricas.map((rubrica) => ({
+                title: rubrica.nombre_rubrica,
+                dataIndex: "evaluacion",
+                key: `${rubrica.rubrica_id}_ajustada`,
+                render: (evaluacion) => {
+                    const currentRubrica = evaluacion?.rubricas?.find(
+                        (r) => r.rubrica_id === rubrica.rubrica_id
+                    );
+                    return currentRubrica ? currentRubrica.puntuacion_ajustada : "-";
+                },
+                width: 150,
+            }))
+            : [];
 
     // Configuración de las columnas principales
     const columns = [
@@ -53,7 +55,7 @@ const PlanillaEvaGrupoIndividual = ({ grupoId, etapaId }) => {
             dataIndex: "estudiante",
             key: "estudiante",
             render: (estudiante) =>
-                `${estudiante.nombre} ${estudiante.apellido}`,
+                `${estudiante?.nombre || "Sin nombre"} ${estudiante?.apellido || ""}`,
             fixed: "left",
             width: 200,
         },
@@ -62,29 +64,29 @@ const PlanillaEvaGrupoIndividual = ({ grupoId, etapaId }) => {
             title: "Puntuación Total",
             dataIndex: "evaluacion",
             key: "puntuacion_total",
-            render: (evaluacion) => evaluacion.puntuacion_total || "-",
+            render: (evaluacion) => 
+                evaluacion?.puntuacion_total ? Math.round(evaluacion.puntuacion_total) : "-",
             width: 150,
         },
         {
             title: "Fecha de Revisión",
             dataIndex: "evaluacion",
             key: "fecha_revision",
-            render: (evaluacion) =>
-                evaluacion.fecha_revision || "Sin revisar",
+            render: (evaluacion) => evaluacion?.fecha_revision || "Sin revisar",
             width: 150,
         },
         {
             title: "Retraso (R)",
             dataIndex: "evaluacion",
             key: "retraso",
-            render: (evaluacion) => (evaluacion.retraso ? "Sí" : "No"),
+            render: (evaluacion) => (evaluacion?.retraso ? "Sí" : "No"),
             width: 100,
         },
         {
             title: "Falta (F)",
             dataIndex: "evaluacion",
             key: "falta",
-            render: (evaluacion) => (evaluacion.falta ? "Sí" : "No"),
+            render: (evaluacion) => (evaluacion?.falta ? "Sí" : "No"),
             width: 100,
         },
     ];
@@ -92,9 +94,13 @@ const PlanillaEvaGrupoIndividual = ({ grupoId, etapaId }) => {
     // Configuración del dataSource para la tabla
     const dataSource = planillaNotas.map((nota, index) => ({
         key: index,
-        estudiante: nota.estudiante,
-        evaluacion: nota.evaluacion,
+        estudiante: nota.estudiante || { nombre: "Desconocido", apellido: "" },
+        evaluacion: nota.evaluacion || {},
     }));
+
+    if (isLoading) {
+        return <p>Cargando planilla de evaluación...</p>;
+    }
 
     return (
         <div className="planilla-eva-grupo-container">
@@ -115,6 +121,7 @@ const PlanillaEvaGrupoIndividual = ({ grupoId, etapaId }) => {
                 bordered
                 size="middle"
                 pagination={false}
+                locale={{ emptyText: "No hay datos disponibles." }}
             />
         </div>
     );

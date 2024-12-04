@@ -17,6 +17,7 @@ use App\Http\Controllers\RubricaController;
 use App\Http\Controllers\EvaluacionIndividualController;
 use App\Http\Controllers\EvaluacionIndividualEstudianteController;
 use App\Http\Controllers\EvaluacionParController;
+use App\Http\Controllers\SeguimientoSemanalController;
 
 // Ruta de login para cargar la aplicación React
 Route::get('/login', function () {
@@ -167,11 +168,27 @@ Route::prefix('api')->group(function () {
     Route::put('/evaluaciones-individuales/{idEstudiante}/{idEtapa}/falta-retraso', [EvaluacionIndividualEstudianteController::class, 'actualizarFaltaRetraso']);
     Route::get('/evaluaciones-individuales/{idGrupo}/{idEtapa}/falta-retraso', [EvaluacionIndividualEstudianteController::class, 'obtenerFaltaRetrasoPorGrupo']);
     Route::get('/grupos/{groupId}/notas', [EvaluacionIndividualEstudianteController::class, 'obtenerNotasPorGrupo']);
+    Route::post('/grupos/{groupId}/notas', [EvaluacionIndividualEstudianteController::class, 'guardarNotas']);
     Route::get('/evaluaciones/etapa/{etapaId}/grupo/{grupoId}', [EvaluacionIndividualEstudianteController::class, 'obtenerEvaluaciones']);
 
     Route::post('/evaluaciones-pares', [EvaluacionParController::class, 'store']);
     Route::get('/evaluaciones-pares/proyecto/{projectId}', [EvaluacionParController::class, 'index']);
     Route::get('/evaluaciones-pares/{id}', [EvaluacionParController::class, 'show']);
+});
+
+Route::prefix('api/seguimiento-semanal')->group(function () {
+    // Obtener seguimientos de un proyecto
+    Route::get('/{projectId}', [SeguimientoSemanalController::class, 'index']);
+    // Obtener seguimientos de un grupo específico dentro de un proyecto
+    Route::get('/{projectId}/{groupId}', [SeguimientoSemanalController::class, 'getByGroup']);
+    // Crear un nuevo seguimiento
+    Route::post('/', [SeguimientoSemanalController::class, 'store']);
+    // Actualizar un seguimiento
+    Route::put('/{id}', [SeguimientoSemanalController::class, 'update']);
+    // Eliminar un seguimiento específico
+    Route::delete('/{id}', [SeguimientoSemanalController::class, 'destroy']);
+    // Eliminar todos los seguimientos de un grupo
+    Route::delete('/grupo/{groupId}', [SeguimientoSemanalController::class, 'deleteByGroup']);
 });
 
 // Rutas de la API para rubricas (protegidas con autenticación)

@@ -532,6 +532,36 @@ class EvaluacionIndividualEstudianteController extends Controller
             return response()->json(['error' => 'Error al obtener las notas del grupo'], 500);
         }
     }
+    public function guardarNotas(Request $request, $groupId)
+{
+    try {
+        $notasData = $request->input('studentsData'); // Obtiene las notas del frontend
+
+        foreach ($notasData as $data) {
+            foreach ($data['notas'] as $nota) {
+                // Actualizar la nota si ya existe o crearla si no
+                EvaluacionIndividualEstudiante::updateOrCreate(
+                    [
+                        'ID_ESTUDIANTE' => $data['estudiante']['ID_ESTUDIANTE'],
+                        'ID_ETAPA' => $nota['ID_ETAPA'],
+                    ],
+                    [
+                        'FECHA_REVISION' => $nota['FECHA_REVISION'],
+                        'PUNTUACION_TOTAL' => $nota['PUNTUACION_TOTAL'],
+                        'FALTA' => $nota['FALTA'],
+                        'RETRASO' => $nota['RETRASO'],
+                    ]
+                );
+            }
+        }
+
+        return response()->json(['message' => 'Notas guardadas exitosamente'], 200);
+    } catch (\Exception $e) {
+        Log::error('Error al guardar las notas: ' . $e->getMessage());
+        return response()->json(['error' => 'Error al guardar las notas'], 500);
+    }
+}
+
 
     public function obtenerEvaluaciones($etapaId, $grupoId)
 {

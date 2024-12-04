@@ -141,20 +141,29 @@ const EvaluacionDePares = () => {
                                 >
                                     <h3>
                                         Evaluación #{index + 1}{" "}
-                                        <small>(ID: {evaluacion.id_evaluacion_par})</small>
+                                        <small>
+                                            (ID: {evaluacion.id_evaluacion_par})
+                                        </small>
                                     </h3>
                                     <p>
                                         <strong>Fecha:</strong>{" "}
-                                        {evaluacion.fecha_inicio || "No especificada"}{" "}
-                                        - {evaluacion.fecha_fin || "No especificada"}
+                                        {evaluacion.fecha_inicio ||
+                                            "No especificada"}{" "}
+                                        -{" "}
+                                        {evaluacion.fecha_fin ||
+                                            "No especificada"}
                                     </p>
                                     <p>
                                         <strong>Nota Máxima:</strong>{" "}
-                                        {evaluacion.nota_maxima || "No especificada"}
+                                        {evaluacion.nota_maxima ||
+                                            "No especificada"}
                                     </p>
                                     <div>
                                         <p>
-                                            <strong>Relación de Evaluadores y Evaluados:</strong>
+                                            <strong>
+                                                Relación de Evaluadores y
+                                                Evaluados:
+                                            </strong>
                                         </p>
                                         <ul>
                                             {evaluacion.grupos_evaluadores?.map(
@@ -172,24 +181,30 @@ const EvaluacionDePares = () => {
                                                                 <strong>
                                                                     Evaluador:
                                                                 </strong>{" "}
-                                                                {grupoEvaluador.grupo_evaluador
+                                                                {grupoEvaluador
+                                                                    .grupo_evaluador
                                                                     ?.NOMBRE_GRUPO ||
                                                                     "Grupo sin nombre"}{" "}
                                                                 (ID:{" "}
-                                                                {grupoEvaluador.grupo_evaluador
-                                                                    ?.ID_GRUPO || "N/A"}
+                                                                {grupoEvaluador
+                                                                    .grupo_evaluador
+                                                                    ?.ID_GRUPO ||
+                                                                    "N/A"}
                                                                 )
                                                             </p>
                                                             <p>
                                                                 <strong>
                                                                     Evaluado:
                                                                 </strong>{" "}
-                                                                {grupoEvaluado?.grupo_evaluado
+                                                                {grupoEvaluado
+                                                                    ?.grupo_evaluado
                                                                     ?.NOMBRE_GRUPO ||
                                                                     "Grupo sin nombre"}{" "}
                                                                 (ID:{" "}
-                                                                {grupoEvaluado?.grupo_evaluado
-                                                                    ?.ID_GRUPO || "N/A"}
+                                                                {grupoEvaluado
+                                                                    ?.grupo_evaluado
+                                                                    ?.ID_GRUPO ||
+                                                                    "N/A"}
                                                                 )
                                                             </p>
                                                         </li>
@@ -201,9 +216,18 @@ const EvaluacionDePares = () => {
                                 </div>
                             ))
                         ) : (
-                            <p>No hay evaluaciones registradas</p>
+                            <p className="no-data-message">
+                                {" "}
+                                No hay evaluaciones registradas
+                            </p>
                         )}
                     </div>
+
+                    {!Array.isArray(grupos) || grupos.length === 0 ? (
+                        <p className="no-data-message">
+                            No hay grupos disponibles para la evaluación.
+                        </p>
+                    ) : null}
                 </div>
             </div>
 

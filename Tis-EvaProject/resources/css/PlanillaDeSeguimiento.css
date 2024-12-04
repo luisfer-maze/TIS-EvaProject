@@ -120,3 +120,39 @@
         padding: 8px;
     }
 }
+
+.edit-notes-btn-container {
+    margin-top: 20px; /* Margen superior para separar el botón de la tabla */
+    text-align: left; /* Centra el botón horizontalmente */
+}/* Ajusta el ancho del input para que sea dinámico */
+.custom-table input[type="number"] {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    padding: 4px 6px; /* Espaciado interno más reducido */
+    text-align: center;
+    width: auto; /* Ancho dinámico */
+    min-width: 60px; /* Ancho mínimo */
+    max-width: 100px; /* Ancho máximo opcional */
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+/* Hover para los inputs */
+.custom-table input[type="number"]:hover {
+    background-color: #eef5ff;
+    border-color: #007bff;
+}
+
+/* Focus para los inputs */
+.custom-table input[type="number"]:focus {
+    background-color: #ffffff;
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+}
+
+.etapas-scroll-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 10px;
+}

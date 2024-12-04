@@ -309,34 +309,44 @@ const GrupoEstudiante = () => {
             setShowErrorMessage(true);
             return;
         }
-
+    
+        // Verificar si el nombre del grupo ya existe
+        const isDuplicate = groups.some(
+            (group) => group.NOMBRE_GRUPO.toLowerCase() === groupName.toLowerCase()
+        );
+        if (isDuplicate) {
+            setErrorMessage("El nombre del grupo ya existe. Por favor, elija otro.");
+            setShowErrorMessage(true);
+            return;
+        }
+    
         const csrfToken = document
             .querySelector('meta[name="csrf-token"]')
             ?.getAttribute("content");
-
+    
         const formData = new FormData();
         formData.append("NOMBRE_GRUPO", groupName);
         formData.append("DESCRIP_GRUPO", groupDescription);
         formData.append("ID_PROYECTO", projectId);
-
+    
         // Añadir CREADO_POR solo si estamos creando un nuevo grupo
         if (!isEditing) {
             formData.append("CREADO_POR", localStorage.getItem("ID_EST"));
         }
-
+    
         if (image) {
             formData.append("PORTADA_GRUPO", image);
         }
-
+    
         // Si estamos en modo edición, añadimos _method para forzar PUT
         if (isEditing) {
             formData.append("_method", "PUT");
         }
-
+    
         const url = isEditing
             ? `http://localhost:8000/api/grupos/${groupToEdit.ID_GRUPO}`
             : "http://localhost:8000/api/grupos";
-
+    
         axios
             .post(url, formData, {
                 headers: {
@@ -346,10 +356,8 @@ const GrupoEstudiante = () => {
                 },
             })
             .then((response) => {
-                console.log("Respuesta completa del backend:", response.data);
-
                 const newGroup = response.data;
-
+    
                 if (isEditing) {
                     setGroups(
                         groups.map((group) =>
@@ -367,7 +375,7 @@ const GrupoEstudiante = () => {
                     localStorage.setItem("createdGroupId", newGroup.ID_GRUPO);
                     setShowCreateSuccessMessage(true);
                 }
-
+    
                 setShowModal(false);
                 setIsEditing(false);
                 setGroupToEdit(null);
@@ -375,18 +383,18 @@ const GrupoEstudiante = () => {
             .catch((error) => {
                 if (error.response && error.response.status === 422) {
                     setErrorMessage(
-                        "Datos inválidos. Verifica los campos e intenta nuevamente."
+                        error.response.data.message ||
+                            "Datos inválidos. Verifica los campos e intenta nuevamente."
                     );
-                    console.log("Detalles del error:", error.response.data);
                 } else {
                     setErrorMessage(
                         "Hubo un problema al guardar el grupo. Intente nuevamente."
                     );
                 }
                 setShowErrorMessage(true);
-                console.error("Error al guardar el grupo:", error);
             });
     };
+    
 
     const handleOpenEditModal = (index) => {
         const group = groups[index];

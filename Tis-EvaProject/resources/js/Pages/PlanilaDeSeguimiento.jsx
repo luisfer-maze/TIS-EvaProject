@@ -16,6 +16,7 @@ const PlanillaDeSeguimiento = () => {
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [studentsData, setStudentsData] = useState([]);
     const [columns, setColumns] = useState([]);
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         if (projectId) {
@@ -55,6 +56,204 @@ const PlanillaDeSeguimiento = () => {
 
     const toggleSidebar = () => setSidebarCollapsed(!isSidebarCollapsed);
 
+    const generateColumns = () => {
+        const etapasMap = {};
+        const fechasDefensa =
+            projectData.find(
+                (group) => group.ID_GRUPO === parseInt(selectedGroup)
+            )?.fechas_defensa || [];
+
+            studentsData.forEach((student) => {
+                student.notas.forEach((nota) => {
+                    const diaDefensa =
+                        Array.isArray(fechasDefensa) && fechasDefensa.length > 0
+                            ? fechasDefensa[0]?.DIA || "Sin día"
+                            : "Sin día";
+            
+                    const columnKey = `${nota.ETAPA_TITULO}_${nota.FECHA_REVISION}`;
+                    if (!etapasMap[columnKey]) {
+                        etapasMap[columnKey] = {
+                            title: (
+                                <div>
+                                    <div>{nota.FECHA_REVISION}</div>
+                                    <div>{diaDefensa}</div>
+                                </div>
+                            ),
+                            parent: `${nota.ETAPA_TITULO} (${nota.ETAPA_PUNTUACION})`,
+                            dataIndex: columnKey,
+                            key: columnKey,
+                            align: "center",
+                            render: (value, record) => {
+                                if (isEditing) {
+                                    return (
+                                        <input
+                                            type="number"
+                                            value={value || ""}
+                                            onChange={(e) => {
+                                                const newValue = parseFloat(e.target.value);
+            
+                                                // Validar que la nota no sea negativa
+                                                if (newValue < 0) {
+                                                    alert("La nota no puede ser negativa.");
+                                                    return;
+                                                }
+            
+                                                // Validar que la nota no exceda la puntuación máxima
+                                                const maxPuntuacion = studentsData
+                                                    .find(
+                                                        (stu) =>
+                                                            stu.estudiante.ID_ESTUDIANTE ===
+                                                            record.key
+                                                    )
+                                                    ?.notas.find(
+                                                        (n) =>
+                                                            `${n.ETAPA_TITULO}_${n.FECHA_REVISION}` ===
+                                                            columnKey
+                                                    )?.ETAPA_PUNTUACION;
+            
+                                                if (newValue > maxPuntuacion) {
+                                                    alert(
+                                                        `La nota no puede ser mayor a ${maxPuntuacion} puntos.`
+                                                    );
+                                                    return;
+                                                }
+            
+                                                // Actualizar los datos
+                                                const updatedData = studentsData.map(
+                                                    (stu) => {
+                                                        if (
+                                                            stu.estudiante.ID_ESTUDIANTE ===
+                                                            record.key
+                                                        ) {
+                                                            stu.notas = stu.notas.map((n) =>
+                                                                `${n.ETAPA_TITULO}_${n.FECHA_REVISION}` ===
+                                                                columnKey
+                                                                    ? {
+                                                                          ...n,
+                                                                          PUNTUACION_TOTAL:
+                                                                              newValue,
+                                                                      }
+                                                                    : n
+                                                            );
+                                                        }
+                                                        return stu;
+                                                    }
+                                                );
+                                                setStudentsData(updatedData);
+                                            }}
+                                            style={{
+                                                textAlign: "center",
+                                                padding: "4px 6px",
+                                                width: "auto", // Ancho dinámico
+                                                minWidth: "60px", // Ancho mínimo
+                                                maxWidth: "100px", // Ancho máximo opcional
+                                            }}
+                                        />
+                                    );
+                                }
+                                return value || "-";
+                            },
+                        };
+                    }
+                });
+            });
+            
+
+        const dynamicColumns = Object.values(etapasMap).reduce(
+            (acc, column) => {
+                const parentIndex = acc.findIndex(
+                    (col) => col.title === column.parent
+                );
+                if (parentIndex === -1) {
+                    acc.push({
+                        title: column.parent,
+                        align: "center",
+                        className: "ant-table-grouped-column-title",
+                        children: [column],
+                    });
+                } else {
+                    acc[parentIndex].children.push(column);
+                }
+                return acc;
+            },
+            []
+        );
+
+        const fixedColumns = [
+            {
+                title: "Estudiantes",
+                dataIndex: "nombreCompleto",
+                key: "nombreCompleto",
+                fixed: "left",
+                width: 200,
+            },
+        ];
+
+        const totalColumn = {
+            title: "Nota Sumativa",
+            dataIndex: "total",
+            key: "total",
+            fixed: "right",
+            width: 150,
+            align: "center",
+            render: (_, row) => {
+                const total = Object.keys(row)
+                    .filter((key) => key.includes("_"))
+                    .reduce(
+                        (sum, key) => sum + (parseFloat(row[key]) || 0),
+                        0
+                    );
+                return Math.round(total); // Redondear el total al número entero más cercano
+            },
+        };
+        
+
+        const retrasoColumn = {
+            title: "Retraso",
+            dataIndex: "retraso",
+            key: "retraso",
+            fixed: "right",
+            width: 100,
+            align: "center",
+            render: (value) => value || 0,
+        };
+
+        const ausenciaInjustificadaColumn = {
+            title: "Ausencia Injustificada",
+            dataIndex: "ausenciaInjustificada",
+            key: "ausenciaInjustificada",
+            fixed: "right",
+            width: 150,
+            align: "center",
+            render: (value) => value || 0,
+        };
+
+        const ausenciaJustificadaColumn = {
+            title: "Ausencia Justificada",
+            dataIndex: "ausenciaJustificada",
+            key: "ausenciaJustificada",
+            fixed: "right",
+            width: 150,
+            align: "center",
+            render: (value) => value || 0,
+        };
+
+        setColumns([
+            ...fixedColumns,
+            ...dynamicColumns,
+            totalColumn,
+            retrasoColumn,
+            ausenciaInjustificadaColumn,
+            ausenciaJustificadaColumn,
+        ]);
+    };
+
+    useEffect(() => {
+        if (selectedGroup && studentsData.length > 0) {
+            generateColumns();
+        }
+    }, [isEditing, studentsData, selectedGroup]);
+
     const handleGroupSelection = async (event) => {
         const groupId = event.target.value;
         setSelectedGroup(groupId);
@@ -72,162 +271,34 @@ const PlanillaDeSeguimiento = () => {
                     ),
                 ]);
 
-                const studentsData = notasResponse.data || [];
-                setStudentsData(studentsData);
-                console.log("Datos de estudiantes:", studentsData);
-
-                const gruposData = gruposResponse.data.groups || [];
-                console.log("Datos de grupos:", gruposData);
-
-                // Buscar el grupo seleccionado y sus fechas de defensa
-                const selectedGrupo = gruposData.find(
-                    (group) => group.ID_GRUPO === parseInt(groupId)
-                );
-                console.log("Grupo seleccionado:", selectedGrupo);
-
-                const fechasDefensa = selectedGrupo?.fechas_defensa || [];
-                console.log(
-                    "Fechas de defensa del grupo seleccionado:",
-                    fechasDefensa
-                );
-
-                // Procesar columnas dinámicas (agrupadas por etapas)
-                const etapasMap = {}; // Usaremos esto para crear columnas dinámicas
-                studentsData.forEach((student) => {
-                    student.notas.forEach((nota) => {
-                        const diaDefensa =
-                            fechasDefensa.length > 0
-                                ? fechasDefensa[0].DIA
-                                : "Sin día";
-
-                        const columnKey = `${nota.ETAPA_TITULO}_${nota.FECHA_REVISION}`;
-                        if (!etapasMap[columnKey]) {
-                            etapasMap[columnKey] = {
-                                title: (
-                                    <div>
-                                        <div>{nota.FECHA_REVISION}</div>
-                                        <div>{diaDefensa}</div>
-                                    </div>
-                                ),
-                                parent: `${nota.ETAPA_TITULO} (${nota.ETAPA_PUNTUACION})`,
-                                dataIndex: columnKey,
-                                key: columnKey,
-                                align: "center", // Centrar texto en celdas
-                                render: (value) => value || "-",
-                            };
-                            
-                        }
-                    });
-                });
-
-                console.log(
-                    "Mapa de etapas para columnas dinámicas:",
-                    etapasMap
-                );
-
-                // Generar columnas agrupadas
-                const dynamicColumns = Object.values(etapasMap).reduce(
-                    (acc, column) => {
-                        const parentIndex = acc.findIndex(
-                            (col) => col.title === column.parent
-                        );
-                        if (parentIndex === -1) {
-                            acc.push({
-                                title: column.parent,
-                                align: "center", // Centra el encabezado
-                                className: "ant-table-grouped-column-title",
-                                children: [column],
-                            });
-                            
-                        } else {
-                            acc[parentIndex].children.push(column);
-                        }
-                        return acc;
-                    },
-                    []
-                );
-
-                // Columnas principales
-                const fixedColumns = [
-                    {
-                        title: "Estudiantes",
-                        dataIndex: "nombreCompleto",
-                        key: "nombreCompleto",
-                        fixed: "left",
-                        width: 200,
-                    },
-                ];
-
-                const totalColumn = {
-                    title: "Nota Sumativa",
-                    dataIndex: "total",
-                    key: "total",
-                    fixed: "right",
-                    width: 150,
-                    align: "center",
-                    render: (_, row) => {
-                        const total = Object.keys(row)
-                            .filter((key) => key.includes("_"))
-                            .reduce(
-                                (sum, key) => sum + (parseFloat(row[key]) || 0),
-                                0
-                            );
-                        return total.toFixed(2);
-                    },
-                };
-
-                // Columnas adicionales
-                const retrasoColumn = {
-                    title: "Retraso",
-                    dataIndex: "retraso",
-                    key: "retraso",
-                    fixed: "right",
-                    width: 100,
-                    align: "center",
-                    render: (value) => value || 0,
-                };
-
-                const ausenciaInjustificadaColumn = {
-                    title: "Ausencia Injustificada",
-                    dataIndex: "ausenciaInjustificada",
-                    key: "ausenciaInjustificada",
-                    fixed: "right",
-                    width: 150,
-                    align: "center",
-                    render: (value) => value || 0, // Muestra 0 si no hay ausencias injustificadas
-                };
-
-                const ausenciaJustificadaColumn = {
-                    title: "Ausencia Justificada",
-                    dataIndex: "ausenciaJustificada",
-                    key: "ausenciaJustificada",
-                    fixed: "right",
-                    width: 150,
-                    align: "center",
-                    render: (value) => value || 0, // Muestra 0 si no hay ausencias justificadas
-                };
-
-                setColumns([
-                    ...fixedColumns,
-                    ...dynamicColumns,
-                    totalColumn,
-                    retrasoColumn,
-                    ausenciaInjustificadaColumn,
-                    ausenciaJustificadaColumn,
-                ]);
+                setStudentsData(notasResponse.data || []);
             } catch (error) {
                 console.error(
                     "Error al obtener datos de los estudiantes o del grupo:",
                     error
                 );
-                setStudentsData([]);
-                setColumns([]);
             }
-        } else {
-            setStudentsData([]);
-            setColumns([]);
         }
     };
+
+    const handleEdit = () => {
+        setIsEditing(true);
+    };
+
+    const handleSave = async () => {
+        try {
+            await axios.post(
+                `http://localhost:8000/api/grupos/${selectedGroup}/notas`,
+                { studentsData },
+                { withCredentials: true }
+            );
+            console.log("Notas guardadas exitosamente.");
+            setIsEditing(false);
+        } catch (error) {
+            console.error("Error al guardar las notas:", error);
+        }
+    };
+
     // Transforma los datos de estudiantes para la tabla
     const dataForTable = studentsData.map((student) => {
         const row = {
@@ -269,63 +340,98 @@ const PlanillaDeSeguimiento = () => {
                     projectId={projectId}
                 />
                 <div className="container">
-                    <div className="projects-header">
-                        <h2>Planilla de Seguimiento</h2>
-                        <button className="new-project-btn">Exportar a Excel</button>
+    <div className="projects-header">
+        <h2>Planilla de Seguimiento</h2>
+        <button className="new-project-btn">Exportar a Excel</button>
+    </div>
+
+    <div className="dropdown-container">
+        <label htmlFor="groupDropdown">Selecciona un grupo:</label>
+        <select
+            id="groupDropdown"
+            value={selectedGroup || ""}
+            onChange={handleGroupSelection}
+        >
+            <option value="" disabled>
+                Seleccionar grupo
+            </option>
+            {Array.isArray(projectData) && projectData.length > 0 ? (
+                projectData.map((group) => (
+                    <option key={group.ID_GRUPO} value={group.ID_GRUPO}>
+                        {group.NOMBRE_GRUPO}
+                    </option>
+                ))
+            ) : (
+                <option disabled>No hay grupos disponibles</option>
+            )}
+        </select>
+    </div>
+
+    {selectedGroup ? (
+        <div className="group-details">
+            <h3>Estudiantes y Notas</h3>
+            {dataForTable.length > 0 ? (
+                <>
+                    {/* Contenedor con scroll horizontal para etapas */}
+                    <div
+                        className="etapas-scroll-container"
+                        style={{
+                            overflowX: "auto",
+                            overflowY: "hidden",
+                            paddingBottom: "10px",
+                        }}
+                    >
+                        <Table
+                            className="custom-table"
+                            columns={columns}
+                            dataSource={dataForTable}
+                            pagination={false}
+                            bordered
+                            size="middle"
+                            rowClassName={(record) =>
+                                record.total >= 50 ? "highlight-row" : ""
+                            }
+                            onRow={(record) => ({
+                                style: { textAlign: "center" }, // Centra el contenido de todas las filas
+                            })}
+                        />
                     </div>
-                    <div className="dropdown-container">
-                        <label htmlFor="groupDropdown">
-                            Selecciona un grupo:
-                        </label>
-                        <select
-                            id="groupDropdown"
-                            value={selectedGroup || ""}
-                            onChange={handleGroupSelection}
-                        >
-                            <option value="" disabled>
-                                Seleccionar grupo
-                            </option>
-                            {Array.isArray(projectData) &&
-                                projectData.map((group) => (
-                                    <option
-                                        key={group.ID_GRUPO}
-                                        value={group.ID_GRUPO}
-                                    >
-                                        {group.NOMBRE_GRUPO}
-                                    </option>
-                                ))}
-                        </select>
+                    {/* Botón debajo de la tabla */}
+                    <div className="edit-notes-btn-container">
+                        {!isEditing ? (
+                            <button
+                                className="new-project-btn"
+                                onClick={handleEdit}
+                            >
+                                Editar Notas
+                            </button>
+                        ) : (
+                            <button
+                                className="new-project-btn"
+                                onClick={handleSave}
+                            >
+                                Guardar
+                            </button>
+                        )}
                     </div>
-                    {selectedGroup && (
-                        <div className="group-details">
-                            <h3>Estudiantes y Notas</h3>
-                            {dataForTable.length > 0 ? (
-                                <Table
-                                className="custom-table"
-                                columns={columns}
-                                dataSource={dataForTable}
-                                pagination={false}
-                                bordered
-                                scroll={{ x: "max-content" }}
-                                size="middle"
-                                rowClassName={(record) => (record.total >= 50 ? "highlight-row" : "")}
-                                onRow={(record) => ({
-                                    style: { textAlign: "center" }, // Centra el contenido de todas las filas
-                                })}
-                            />
-                            
-                            ) : (
-                                <p>
-                                    No hay estudiantes registrados o notas
-                                    disponibles.
-                                </p>
-                            )}
-                        </div>
-                    )}
-                </div>
+                </>
+            ) : (
+                <p className="no-data-message">
+                    No hay estudiantes registrados o notas disponibles.
+                </p>
+            )}
+        </div>
+    ) : (
+        <p className="no-data-message">
+            Seleccione un grupo para ver detalles.
+        </p>
+    )}
+</div>
+
             </div>
         </div>
     );
+    
 };
 
 export default PlanillaDeSeguimiento;
